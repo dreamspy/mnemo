@@ -1,0 +1,5 @@
+{
+  "auth_token": "CHANGE_ME",
+  "events_file": "/var/lib/mnemo/events.jsonl",
+  "derived_dir": "/var/lib/mnemo/derived/"
+}

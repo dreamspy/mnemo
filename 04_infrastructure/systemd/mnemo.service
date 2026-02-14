@@ -1,0 +1,17 @@
+[Unit]
+Description=Mnemo Event Engine
+After=network.target
+
+[Service]
+Type=simple
+User=mnemo
+Group=mnemo
+WorkingDirectory=/opt/mnemo/02_backend
+ExecStart=/opt/mnemo/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+Environment=MNEMO_CONFIG=/etc/mnemo/config.json
+Environment=MNEMO_EVENTS_FILE=/var/lib/mnemo/events.jsonl
+
+[Install]
+WantedBy=multi-user.target

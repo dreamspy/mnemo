@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+*.whl
+pip-log.txt
+
+# Node
+node_modules/
+.next/
+.nuxt/
+dist/
+.cache/
+.parcel-cache/
+
+# Environment & secrets
+.env
+.env.*
+config.json
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+._*
+
+# Obsidian
+.obsidian/
+
+# Data (never commit real events)
+events.jsonl
+derived/
+
+# Logs
+*.log
+logs/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Build artifacts
+*.so
+*.dylib

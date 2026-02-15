@@ -631,12 +631,8 @@
 
   // Diary: back to edit from review
   document.getElementById("btn-diary-back-review").addEventListener("click", function () {
-    if (diaryBulkMode) {
-      renderBulkText();
-    } else {
-      diaryStepIndex = DIARY_QUESTIONS.length - 1;
-      renderDiaryStep();
-    }
+    diaryStepIndex = DIARY_QUESTIONS.length - 1;
+    renderDiaryStep();
   });
 
   // Diary: save

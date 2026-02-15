@@ -63,6 +63,15 @@
     }, 3000);
   }
 
+  // --- UUID generation (fallback for non-secure contexts) ---
+
+  function generateUUID() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, function (c) {
+      return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+    });
+  }
+
   // --- Event submission ---
 
   async function submitEvent() {
@@ -92,7 +101,7 @@
     showState(stateSubmitting);
 
     var event = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       client_timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
       type: selectedType,
       text: text,
@@ -164,6 +173,56 @@
   inputText.addEventListener("keydown", function (e) {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       submitEvent();
+    }
+  });
+
+  // --- Query ---
+
+  var queryInput = document.getElementById("query-input");
+  var queryAnswer = document.getElementById("query-answer");
+
+  async function submitQuery() {
+    var question = queryInput.value.trim();
+    if (!question) return;
+
+    var token = getToken();
+    if (!token) {
+      promptForToken();
+      return;
+    }
+
+    queryAnswer.textContent = "Thinking...";
+    queryAnswer.className = "query-answer loading";
+
+    try {
+      var res = await fetch(API_BASE + "/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ question: question }),
+      });
+
+      if (!res.ok) {
+        var body = await res.json().catch(function () { return {}; });
+        throw new Error(body.detail || "HTTP " + res.status);
+      }
+
+      var data = await res.json();
+      queryAnswer.textContent = data.answer;
+      queryAnswer.className = "query-answer";
+    } catch (err) {
+      queryAnswer.textContent = "Error: " + (err.message || "Network error");
+      queryAnswer.className = "query-answer";
+    }
+  }
+
+  document.getElementById("btn-ask").addEventListener("click", submitQuery);
+
+  queryInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      submitQuery();
     }
   });
 

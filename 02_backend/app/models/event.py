@@ -27,3 +27,11 @@ class EventIn(BaseModel):
 
 class EventStored(EventIn):
     received_at: str = Field(..., description="ISO 8601 UTC timestamp with Z, set by server")
+
+
+class QueryIn(BaseModel):
+    question: str
+
+
+class QueryOut(BaseModel):
+    answer: str

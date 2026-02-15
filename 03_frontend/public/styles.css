@@ -192,6 +192,45 @@ body {
   color: #1a1a2e;
 }
 
+/* Query section */
+.query-section {
+  width: 100%;
+  margin-top: 1rem;
+  border-top: 1px solid var(--bg-input);
+  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.query-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.query-input-row .input {
+  flex: 1;
+}
+
+.btn-ask {
+  padding: 0.75rem 1.2rem;
+  white-space: nowrap;
+}
+
+.query-answer {
+  background: var(--bg-surface);
+  border-radius: var(--radius);
+  padding: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.query-answer.loading {
+  color: var(--text-muted);
+}
+
 /* Dialog */
 dialog {
   background: var(--bg-surface);

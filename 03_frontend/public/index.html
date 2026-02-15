@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="description" content="Mnemo — personal event logger">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.svg">
+  <link rel="stylesheet" href="styles.css">
+  <title>Mnemo</title>
+</head>
+<body>
+  <main id="app">
+    <h1 class="title">Mnemo</h1>
+
+    <!-- State: idle -->
+    <section id="state-idle" class="state">
+      <button id="btn-log" class="btn btn-log">Log</button>
+    </section>
+
+    <!-- State: category select -->
+    <section id="state-category" class="state hidden">
+      <p class="label">Category</p>
+      <div class="category-grid">
+        <button class="btn btn-category" data-type="Event">Event</button>
+        <button class="btn btn-category" data-type="Intervention">Intervention</button>
+        <button class="btn btn-category" data-type="Symptom">Symptom</button>
+        <button class="btn btn-category" data-type="Decision">Decision</button>
+        <button class="btn btn-category" data-type="Diary">Diary</button>
+      </div>
+      <button class="btn btn-back" id="btn-back-category">Back</button>
+    </section>
+
+    <!-- State: compose -->
+    <section id="state-compose" class="state hidden">
+      <p class="label">New <span id="compose-type"></span></p>
+      <textarea id="input-text" class="input" placeholder="What happened?" rows="3"></textarea>
+      <input id="input-metrics" class="input" type="text" placeholder='Metrics (optional JSON, e.g. {"mood":7})'>
+      <div class="compose-actions">
+        <button class="btn btn-back" id="btn-back-compose">Back</button>
+        <button class="btn btn-submit" id="btn-submit">Submit</button>
+      </div>
+    </section>
+
+    <!-- State: submitting -->
+    <section id="state-submitting" class="state hidden">
+      <p class="feedback">Submitting...</p>
+    </section>
+
+    <!-- Feedback toast -->
+    <div id="toast" class="toast hidden"></div>
+  </main>
+
+  <!-- Token config modal -->
+  <dialog id="token-dialog">
+    <form method="dialog">
+      <h2>Set API Token</h2>
+      <p>Enter your Mnemo bearer token to connect to the backend.</p>
+      <input id="token-input" class="input" type="text" placeholder="Bearer token" autocomplete="off">
+      <button class="btn btn-submit" id="btn-save-token">Save</button>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

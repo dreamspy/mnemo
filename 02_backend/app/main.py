@@ -4,11 +4,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.models.event import EventIn, EventStored
 
 app = FastAPI(title="Mnemo", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["POST"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 security = HTTPBearer()
 
 EVENTS_FILE = Path(os.environ.get("MNEMO_EVENTS_FILE", "/var/lib/mnemo/events.jsonl"))

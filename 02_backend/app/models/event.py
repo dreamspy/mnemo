@@ -9,7 +9,6 @@ class EventType(str, Enum):
     intervention = "Intervention"
     symptom = "Symptom"
     decision = "Decision"
-    diary = "Diary"
 
 
 class EventMeta(BaseModel):

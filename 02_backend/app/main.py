@@ -2,8 +2,9 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
@@ -44,6 +45,38 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/events", dependencies=[Depends(verify_token)])
+def list_events(
+    date: Optional[str] = Query(None),
+    from_date: Optional[str] = Query(None, alias="from"),
+    to_date: Optional[str] = Query(None, alias="to"),
+) -> list[EventStored]:
+    if not EVENTS_FILE.exists():
+        return []
+
+    # Determine date filter
+    if from_date and to_date:
+        filter_from = from_date
+        filter_to = to_date
+    elif date:
+        filter_from = date
+        filter_to = date
+    else:
+        filter_from = filter_to = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    results = []
+    for line in EVENTS_FILE.read_text().strip().splitlines():
+        if not line.strip():
+            continue
+        entry = json.loads(line)
+        ts = entry.get("client_timestamp", "")
+        day = ts[:10]
+        if filter_from <= day <= filter_to:
+            results.append(EventStored(**entry))
+
+    return results
 
 
 @app.post("/events", status_code=201, dependencies=[Depends(verify_token)])

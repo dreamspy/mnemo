@@ -21,6 +21,7 @@
     <section id="state-idle" class="state">
       <button id="btn-log" class="btn btn-log">Log</button>
       <button id="btn-diary" class="btn btn-diary">Diary</button>
+      <button id="btn-history" class="btn btn-history">History</button>
     </section>
 
     <!-- Diary: date picker -->
@@ -72,6 +73,28 @@
     <!-- Diary: saving -->
     <section id="state-diary-saving" class="state hidden">
       <p class="feedback">Saving...</p>
+    </section>
+
+    <!-- State: history -->
+    <section id="state-history" class="state hidden">
+      <p class="label">History</p>
+      <div class="history-date-row">
+        <input id="history-date" class="input" type="date">
+      </div>
+      <label class="history-range-toggle">
+        <input id="history-range-check" type="checkbox"> Date range
+      </label>
+      <div id="history-range-row" class="history-date-row hidden">
+        <input id="history-date-from" class="input" type="date">
+        <span class="history-range-sep">to</span>
+        <input id="history-date-to" class="input" type="date">
+      </div>
+      <div class="history-tabs">
+        <button class="btn history-tab active" id="tab-events">Events</button>
+        <button class="btn history-tab" id="tab-diary">Diary</button>
+      </div>
+      <div id="history-results" class="history-results"></div>
+      <button class="btn btn-back" id="btn-history-back">Back</button>
     </section>
 
     <!-- State: category select -->

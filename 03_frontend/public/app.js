@@ -9,6 +9,7 @@
   const stateCategory = document.getElementById("state-category");
   const stateCompose = document.getElementById("state-compose");
   const stateSubmitting = document.getElementById("state-submitting");
+  const stateHistory = document.getElementById("state-history");
   const stateDiaryDate = document.getElementById("state-diary-date");
   const stateDiaryLoading = document.getElementById("state-diary-loading");
   const stateDiarySummary = document.getElementById("state-diary-summary");
@@ -30,6 +31,7 @@
     stateIdle, stateCategory, stateCompose, stateSubmitting,
     stateDiaryDate, stateDiaryLoading, stateDiarySummary,
     stateDiaryStep, stateDiaryReview, stateDiarySaving,
+    stateHistory,
   ];
 
   function showState(section) {
@@ -521,6 +523,162 @@
       showState(stateDiaryReview);
     }
   });
+
+  // --- History ---
+
+  var historyTab = "events";
+  var historyDateInput = document.getElementById("history-date");
+  var historyRangeCheck = document.getElementById("history-range-check");
+  var historyRangeRow = document.getElementById("history-range-row");
+  var historyDateFrom = document.getElementById("history-date-from");
+  var historyDateTo = document.getElementById("history-date-to");
+  var historyResults = document.getElementById("history-results");
+
+  document.getElementById("btn-history").addEventListener("click", function () {
+    if (!getToken()) {
+      promptForToken();
+      return;
+    }
+    historyTab = "events";
+    historyDateInput.value = todayStr();
+    historyRangeCheck.checked = false;
+    historyRangeRow.classList.add("hidden");
+    document.getElementById("tab-events").classList.add("active");
+    document.getElementById("tab-diary").classList.remove("active");
+    showState(stateHistory);
+    fetchHistory();
+  });
+
+  document.getElementById("btn-history-back").addEventListener("click", resetToIdle);
+
+  document.getElementById("tab-events").addEventListener("click", function () {
+    historyTab = "events";
+    document.getElementById("tab-events").classList.add("active");
+    document.getElementById("tab-diary").classList.remove("active");
+    fetchHistory();
+  });
+
+  document.getElementById("tab-diary").addEventListener("click", function () {
+    historyTab = "diary";
+    document.getElementById("tab-diary").classList.add("active");
+    document.getElementById("tab-events").classList.remove("active");
+    fetchHistory();
+  });
+
+  historyDateInput.addEventListener("change", fetchHistory);
+  historyDateFrom.addEventListener("change", fetchHistory);
+  historyDateTo.addEventListener("change", fetchHistory);
+
+  historyRangeCheck.addEventListener("change", function () {
+    if (historyRangeCheck.checked) {
+      historyRangeRow.classList.remove("hidden");
+      historyDateInput.parentElement.classList.add("hidden");
+      historyDateFrom.value = historyDateInput.value;
+      historyDateTo.value = historyDateInput.value;
+    } else {
+      historyRangeRow.classList.add("hidden");
+      historyDateInput.parentElement.classList.remove("hidden");
+      historyDateInput.value = historyDateFrom.value || todayStr();
+    }
+    fetchHistory();
+  });
+
+  async function fetchHistory() {
+    var token = getToken();
+    var headers = { Authorization: "Bearer " + token };
+
+    historyResults.innerHTML = '<p class="history-empty">Loading...</p>';
+
+    try {
+      if (historyTab === "events") {
+        var url;
+        if (historyRangeCheck.checked) {
+          url = API_BASE + "/events?from=" + historyDateFrom.value + "&to=" + historyDateTo.value;
+        } else {
+          url = API_BASE + "/events?date=" + historyDateInput.value;
+        }
+        var res = await fetch(url, { headers: headers });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var events = await res.json();
+        renderEvents(events);
+      } else {
+        var dateVal = historyRangeCheck.checked ? historyDateFrom.value : historyDateInput.value;
+        var res = await fetch(API_BASE + "/diary/" + dateVal, { headers: headers });
+        if (res.status === 404) {
+          historyResults.innerHTML = '<p class="history-empty">No diary entry for this date.</p>';
+          return;
+        }
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var diary = await res.json();
+        renderDiaryHistory(diary);
+      }
+    } catch (err) {
+      historyResults.innerHTML = '<p class="history-empty">Error: ' + (err.message || "Network error") + '</p>';
+    }
+  }
+
+  function renderEvents(events) {
+    historyResults.innerHTML = "";
+    if (!events.length) {
+      historyResults.innerHTML = '<p class="history-empty">No events found.</p>';
+      return;
+    }
+    events.forEach(function (ev) {
+      var card = document.createElement("div");
+      card.className = "event-card";
+
+      var header = document.createElement("div");
+      header.className = "event-card-header";
+
+      var badge = document.createElement("span");
+      badge.className = "event-type-badge";
+      badge.textContent = ev.type;
+
+      var time = document.createElement("span");
+      time.className = "event-time";
+      var ts = ev.client_timestamp || "";
+      time.textContent = ts.slice(11, 16);
+
+      header.appendChild(badge);
+      header.appendChild(time);
+
+      var text = document.createElement("div");
+      text.className = "event-text";
+      text.textContent = ev.text;
+
+      card.appendChild(header);
+      card.appendChild(text);
+      historyResults.appendChild(card);
+    });
+  }
+
+  function renderDiaryHistory(diary) {
+    historyResults.innerHTML = "";
+    if (!diary.answers || !Object.keys(diary.answers).length) {
+      historyResults.innerHTML = '<p class="history-empty">Diary entry is empty.</p>';
+      return;
+    }
+
+    DIARY_QUESTIONS.forEach(function (q) {
+      var ans = diary.answers[q.key];
+      if (ans === undefined || ans === "") return;
+
+      var item = document.createElement("div");
+      item.className = "diary-review-item";
+
+      var label = document.createElement("div");
+      label.className = "review-label";
+      label.textContent = q.label;
+
+      var value = document.createElement("div");
+      value.className = "review-value";
+      value.textContent = ans;
+
+      item.appendChild(label);
+      item.appendChild(value);
+      historyResults.appendChild(item);
+    });
+  }
 
   // --- Token button ---
 

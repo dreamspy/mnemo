@@ -35,3 +35,24 @@ class QueryIn(BaseModel):
 
 class QueryOut(BaseModel):
     answer: str
+
+
+class DiaryMeta(BaseModel):
+    version: int = 1
+
+
+class DiaryIn(BaseModel):
+    date: str = Field(..., description="YYYY-MM-DD")
+    answers: dict[str, Any] = Field(default_factory=dict)
+
+
+class DiaryOut(BaseModel):
+    id: str
+    date: str
+    answers: dict[str, Any]
+    saved_at: str
+    meta: DiaryMeta = Field(default_factory=DiaryMeta)
+
+
+class DiarySummaryOut(BaseModel):
+    summary: str

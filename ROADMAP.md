@@ -19,19 +19,25 @@
 
 - [x] Provision EC2 instance (Ubuntu 24.04, eu-west-1)
 - [x] Create mnemo user and directory structure (`/opt`, `/var/lib`, `/var/log`, `/etc`)
-- [ ] Clone repo to `/opt/mnemo/`
-- [ ] Set up Python venv on server
-- [ ] Copy config and set auth token
-- [ ] Install and start systemd service
-- [ ] Install and configure Nginx
-- [ ] Point Cloudflare DNS to the instance
-- [ ] Test `POST /events` against live server
+- [x] Clone repo to `/opt/mnemo/`
+- [x] Set up Python venv on server
+- [x] Copy config and set auth token
+- [x] Install and start systemd service
+- [x] Install and configure Nginx
+- [ ] Point Cloudflare DNS to the instance (deferred — using EC2 hostname for now)
+- [x] Test `POST /events` against live server
 
-## Phase 4 — Deploy Frontend
+## Phase 4 — Deploy Frontend ✅
 
-- [ ] Decide hosting: serve static files from Nginx or separate build
-- [ ] Deploy PWA to server
-- [ ] Test full flow over the internet
+- [x] Decide hosting: serve static files from Nginx
+- [x] Deploy PWA to server
+- [x] Test full flow over the internet
+
+## Phase 4.5 — iPhone Quick Logging
+
+- [x] Add to Home Screen on iPhone (PWA)
+- [x] Test full logging flow on mobile
+- [x] Optimize for frictionless mobile use (PWA in dock)
 
 ## Phase 5 — Syncthing
 

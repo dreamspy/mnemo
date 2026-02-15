@@ -20,6 +20,58 @@
     <!-- State: idle -->
     <section id="state-idle" class="state">
       <button id="btn-log" class="btn btn-log">Log</button>
+      <button id="btn-diary" class="btn btn-diary">Diary</button>
+    </section>
+
+    <!-- Diary: date picker -->
+    <section id="state-diary-date" class="state hidden">
+      <p class="label">Diary — Pick a Date</p>
+      <input id="diary-date-input" class="input" type="date">
+      <div class="diary-date-actions">
+        <button class="btn btn-back" id="btn-diary-yesterday">Yesterday</button>
+        <button class="btn btn-back" id="btn-diary-today">Today</button>
+        <button class="btn btn-submit" id="btn-diary-start">Start</button>
+      </div>
+      <button class="btn btn-back" id="btn-diary-back-date">Back</button>
+    </section>
+
+    <!-- Diary: loading -->
+    <section id="state-diary-loading" class="state hidden">
+      <p class="feedback">Loading...</p>
+    </section>
+
+    <!-- Diary: summary -->
+    <section id="state-diary-summary" class="state hidden">
+      <p class="label">Today's Events Summary</p>
+      <div id="diary-summary-text" class="diary-summary-box"></div>
+      <button class="btn btn-submit" id="btn-diary-continue">Continue</button>
+    </section>
+
+    <!-- Diary: step (one question at a time) -->
+    <section id="state-diary-step" class="state hidden">
+      <p class="diary-progress" id="diary-progress"></p>
+      <p class="label" id="diary-step-label"></p>
+      <p class="diary-question" id="diary-step-question"></p>
+      <div id="diary-step-input-area"></div>
+      <div class="diary-step-actions">
+        <button class="btn btn-back" id="btn-diary-prev">Back</button>
+        <button class="btn btn-submit" id="btn-diary-next">Next</button>
+      </div>
+    </section>
+
+    <!-- Diary: review -->
+    <section id="state-diary-review" class="state hidden">
+      <p class="label">Review Your Diary</p>
+      <div id="diary-review-list" class="diary-review-list"></div>
+      <div class="diary-step-actions">
+        <button class="btn btn-back" id="btn-diary-back-review">Edit</button>
+        <button class="btn btn-submit" id="btn-diary-save">Save</button>
+      </div>
+    </section>
+
+    <!-- Diary: saving -->
+    <section id="state-diary-saving" class="state hidden">
+      <p class="feedback">Saving...</p>
     </section>
 
     <!-- State: category select -->
@@ -75,6 +127,7 @@
     </form>
   </dialog>
 
+  <button id="btn-token" class="btn-token" title="Set token">&#9881;</button>
   <script src="app.js"></script>
 </body>
 </html>

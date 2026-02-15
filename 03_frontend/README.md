@@ -25,10 +25,19 @@ MNEMO_EVENTS_FILE=./events.jsonl MNEMO_AUTH_TOKEN=dev-token ./venv/bin/uvicorn a
 
 ## UI Flow
 
+### Event Logging
 1. Tap **Log**
 2. Pick a category (Event, Intervention, Symptom, Decision, Diary)
 3. Enter text, optionally add metrics as JSON
 4. Submit
+
+### Structured Diary
+1. Tap **Diary**
+2. Pick a date (defaults to today, "Yesterday" shortcut available)
+3. View AI summary of the day's logged events
+4. Step through 9 health/wellness questions (scale 1-10 or free text)
+5. Review all answers
+6. Save — entry is appended to diary.jsonl
 
 ## PWA
 

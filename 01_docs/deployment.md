@@ -10,6 +10,7 @@ Mnemo runs on an AWS EC2 instance (Ubuntu 22.04). Code is deployed to `/opt/mnem
 /opt/mnemo/              → Application code (git clone target)
 /var/lib/mnemo/
     events.jsonl         → Raw event stream
+    diary.jsonl          → Structured diary entries
     derived/             → Computed/aggregated data
 /var/log/mnemo/          → Application logs
 /etc/mnemo/

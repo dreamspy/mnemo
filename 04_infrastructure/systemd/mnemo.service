@@ -12,6 +12,7 @@ Restart=always
 RestartSec=5
 Environment=MNEMO_CONFIG=/etc/mnemo/config.json
 Environment=MNEMO_EVENTS_FILE=/var/lib/mnemo/events.jsonl
+Environment=MNEMO_DIARY_FILE=/var/lib/mnemo/diary.jsonl
 Environment=OPENAI_API_KEY=
 
 [Install]

@@ -45,7 +45,37 @@
     <section id="state-diary-summary" class="state hidden">
       <p class="label">Today's Events Summary</p>
       <div id="diary-summary-text" class="diary-summary-box"></div>
-      <button class="btn btn-submit" id="btn-diary-continue">Continue</button>
+      <div class="diary-summary-actions">
+        <button class="btn btn-quick" id="btn-diary-quick">Quick Entry</button>
+        <button class="btn btn-submit" id="btn-diary-continue">Continue</button>
+      </div>
+    </section>
+
+    <!-- Diary: bulk scales -->
+    <section id="state-diary-bulk-scales" class="state hidden">
+      <p class="label">Rate Your Day</p>
+      <div id="bulk-scales-list" class="bulk-scales-list"></div>
+      <div class="diary-step-actions">
+        <button class="btn btn-back" id="btn-bulk-scales-back">Back</button>
+        <button class="btn btn-submit" id="btn-bulk-scales-next">Next</button>
+      </div>
+    </section>
+
+    <!-- Diary: bulk text -->
+    <section id="state-diary-bulk-text" class="state hidden">
+      <p class="label">Describe Your Day</p>
+      <p class="bulk-text-hint">Answer any or all of these in one go:</p>
+      <ul id="bulk-text-questions" class="bulk-text-questions"></ul>
+      <textarea id="bulk-text-input" class="diary-textarea" rows="6" placeholder="Type or dictate your answers..."></textarea>
+      <div class="diary-step-actions">
+        <button class="btn btn-back" id="btn-bulk-text-back">Back</button>
+        <button class="btn btn-submit" id="btn-bulk-text-review">Review</button>
+      </div>
+    </section>
+
+    <!-- Diary: bulk parsing -->
+    <section id="state-diary-bulk-parsing" class="state hidden">
+      <p class="feedback">Parsing your entry...</p>
     </section>
 
     <!-- Diary: step (one question at a time) -->

@@ -13,6 +13,7 @@ from openai import OpenAI
 from app.models.event import (
     EventIn, EventStored, QueryIn, QueryOut,
     DiaryIn, DiaryOut, DiarySummaryOut,
+    DiaryParseIn, DiaryParseOut,
 )
 
 import uuid
@@ -136,6 +137,59 @@ def query_events(q: QueryIn) -> QueryOut:
     )
 
     return QueryOut(answer=response.choices[0].message.content)
+
+
+@app.post("/diary/parse-text", dependencies=[Depends(verify_token)])
+def parse_diary_text(body: DiaryParseIn) -> DiaryParseOut:
+    if not OPENAI_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="OpenAI API key not configured",
+        )
+
+    question_list = "\n".join(
+        f'- key="{q["key"]}": {q["label"]}'
+        for q in body.questions
+    )
+
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_format={"type": "json_object"},
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You extract structured diary answers from free-form text. "
+                    "The user dictated or typed answers to these questions:\n"
+                    f"{question_list}\n\n"
+                    "Return a JSON object with exactly those keys. "
+                    "Each value must be a string with the relevant answer. "
+                    "If a topic is not mentioned, use an empty string. "
+                    "Lightly clean speech-to-text errors but preserve the user's voice."
+                ),
+            },
+            {
+                "role": "user",
+                "content": body.raw_text,
+            },
+        ],
+    )
+
+    parsed = json.loads(response.choices[0].message.content)
+
+    # Only keep expected keys, coerce values to strings
+    expected_keys = {q["key"] for q in body.questions}
+    answers = {
+        k: str(v) for k, v in parsed.items()
+        if k in expected_keys
+    }
+    # Fill missing keys with empty string
+    for k in expected_keys:
+        if k not in answers:
+            answers[k] = ""
+
+    return DiaryParseOut(answers=answers)
 
 
 @app.get("/diary/{date}", dependencies=[Depends(verify_token)])

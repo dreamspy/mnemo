@@ -16,6 +16,9 @@
   const stateDiaryStep = document.getElementById("state-diary-step");
   const stateDiaryReview = document.getElementById("state-diary-review");
   const stateDiarySaving = document.getElementById("state-diary-saving");
+  const stateDiaryBulkScales = document.getElementById("state-diary-bulk-scales");
+  const stateDiaryBulkText = document.getElementById("state-diary-bulk-text");
+  const stateDiaryBulkParsing = document.getElementById("state-diary-bulk-parsing");
   const composeType = document.getElementById("compose-type");
   const inputText = document.getElementById("input-text");
   const inputMetrics = document.getElementById("input-metrics");
@@ -24,6 +27,7 @@
   const tokenInput = document.getElementById("token-input");
 
   let selectedType = null;
+  var diaryBulkMode = false;
 
   // --- State transitions ---
 
@@ -31,6 +35,7 @@
     stateIdle, stateCategory, stateCompose, stateSubmitting,
     stateDiaryDate, stateDiaryLoading, stateDiarySummary,
     stateDiaryStep, stateDiaryReview, stateDiarySaving,
+    stateDiaryBulkScales, stateDiaryBulkText, stateDiaryBulkParsing,
     stateHistory,
   ];
 
@@ -43,6 +48,7 @@
 
   function resetToIdle() {
     selectedType = null;
+    diaryBulkMode = false;
     inputText.value = "";
     inputMetrics.value = "";
     showState(stateIdle);
@@ -253,6 +259,9 @@
     { key: "activity", label: "Physical Activity", question: "What physical activity did you do today, if any?", type: "text" },
   ];
 
+  var SCALE_QUESTIONS = DIARY_QUESTIONS.filter(function (q) { return q.type === "scale"; });
+  var TEXT_QUESTIONS = DIARY_QUESTIONS.filter(function (q) { return q.type === "text"; });
+
   var diaryDate = "";
   var diaryAnswers = {};
   var diaryStepIndex = 0;
@@ -331,10 +340,140 @@
     }
   });
 
-  // Diary: continue from summary to first question
+  // Diary: continue from summary to first question (step-by-step)
   document.getElementById("btn-diary-continue").addEventListener("click", function () {
+    diaryBulkMode = false;
     diaryStepIndex = 0;
     renderDiaryStep();
+  });
+
+  // Diary: quick entry (bulk mode)
+  document.getElementById("btn-diary-quick").addEventListener("click", function () {
+    diaryBulkMode = true;
+    renderBulkScales();
+  });
+
+  // --- Bulk scales ---
+
+  function renderBulkScales() {
+    var list = document.getElementById("bulk-scales-list");
+    list.innerHTML = "";
+
+    SCALE_QUESTIONS.forEach(function (q) {
+      var row = document.createElement("div");
+      row.className = "bulk-scale-row";
+
+      var label = document.createElement("div");
+      label.className = "bulk-scale-label";
+      label.textContent = q.label;
+      row.appendChild(label);
+
+      var grid = document.createElement("div");
+      grid.className = "scale-grid";
+      for (var i = q.min; i <= q.max; i++) {
+        (function (val) {
+          var btn = document.createElement("button");
+          btn.className = "btn btn-scale";
+          btn.textContent = val;
+          if (diaryAnswers[q.key] === val) {
+            btn.classList.add("selected");
+          }
+          btn.addEventListener("click", function () {
+            diaryAnswers[q.key] = val;
+            grid.querySelectorAll(".btn-scale").forEach(function (b) {
+              b.classList.remove("selected");
+            });
+            btn.classList.add("selected");
+          });
+          grid.appendChild(btn);
+        })(i);
+      }
+      row.appendChild(grid);
+      list.appendChild(row);
+    });
+
+    showState(stateDiaryBulkScales);
+  }
+
+  document.getElementById("btn-bulk-scales-back").addEventListener("click", function () {
+    showState(stateDiarySummary);
+  });
+
+  document.getElementById("btn-bulk-scales-next").addEventListener("click", function () {
+    renderBulkText();
+  });
+
+  // --- Bulk text ---
+
+  function renderBulkText() {
+    var questionList = document.getElementById("bulk-text-questions");
+    questionList.innerHTML = "";
+    TEXT_QUESTIONS.forEach(function (q) {
+      var li = document.createElement("li");
+      li.textContent = q.label + " — " + q.question;
+      questionList.appendChild(li);
+    });
+
+    // Pre-fill textarea from existing text answers
+    var textarea = document.getElementById("bulk-text-input");
+    var existing = TEXT_QUESTIONS
+      .filter(function (q) { return diaryAnswers[q.key]; })
+      .map(function (q) { return q.label + ": " + diaryAnswers[q.key]; })
+      .join("\n");
+    textarea.value = existing;
+
+    showState(stateDiaryBulkText);
+    setTimeout(function () { textarea.focus(); }, 50);
+  }
+
+  document.getElementById("btn-bulk-text-back").addEventListener("click", function () {
+    renderBulkScales();
+  });
+
+  document.getElementById("btn-bulk-text-review").addEventListener("click", async function () {
+    var rawText = document.getElementById("bulk-text-input").value.trim();
+
+    if (!rawText) {
+      // No text — go straight to review with just scale answers
+      renderDiaryReview();
+      return;
+    }
+
+    showState(stateDiaryBulkParsing);
+
+    var token = getToken();
+    var questions = TEXT_QUESTIONS.map(function (q) {
+      return { key: q.key, label: q.label };
+    });
+
+    try {
+      var res = await fetch(API_BASE + "/diary/parse-text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ raw_text: rawText, questions: questions }),
+      });
+
+      if (!res.ok) {
+        var body = await res.json().catch(function () { return {}; });
+        throw new Error(body.detail || "HTTP " + res.status);
+      }
+
+      var data = await res.json();
+      // Merge parsed text answers with existing scale answers
+      Object.keys(data.answers).forEach(function (k) {
+        if (data.answers[k]) {
+          diaryAnswers[k] = data.answers[k];
+        }
+      });
+
+      renderDiaryReview();
+    } catch (err) {
+      showToast(err.message || "Network error", "error");
+      showState(stateDiaryBulkText);
+    }
   });
 
   // Render current diary step
@@ -492,8 +631,12 @@
 
   // Diary: back to edit from review
   document.getElementById("btn-diary-back-review").addEventListener("click", function () {
-    diaryStepIndex = DIARY_QUESTIONS.length - 1;
-    renderDiaryStep();
+    if (diaryBulkMode) {
+      renderBulkText();
+    } else {
+      diaryStepIndex = DIARY_QUESTIONS.length - 1;
+      renderDiaryStep();
+    }
   });
 
   // Diary: save

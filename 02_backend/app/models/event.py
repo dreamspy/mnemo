@@ -56,3 +56,12 @@ class DiaryOut(BaseModel):
 
 class DiarySummaryOut(BaseModel):
     summary: str
+
+
+class DiaryParseIn(BaseModel):
+    raw_text: str
+    questions: list[dict[str, str]]
+
+
+class DiaryParseOut(BaseModel):
+    answers: dict[str, str]

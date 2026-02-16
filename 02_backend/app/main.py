@@ -131,7 +131,7 @@ def query_events(q: QueryIn) -> QueryOut:
                     "You are analyzing a personal health/life log containing two data sources:\n"
                     "1. Events — each line is JSON with fields: id, client_timestamp, received_at, type, text, metrics, meta\n"
                     "2. Diary entries — each line is JSON with fields: id, date, answers (object with keys like "
-                    "headaches, energy, gut, physical, hip_pain, mental, life, gratitude, activity), saved_at, meta\n\n"
+                    "sleep, headaches, energy, gut, physical, hip_pain, mental, life, gratitude, activity), saved_at, meta\n\n"
                     "Answer the user's question based on this data. Be concise and helpful."
                 ),
             },

@@ -112,10 +112,14 @@ def query_events(q: QueryIn) -> QueryOut:
 
     events_text = ""
     if EVENTS_FILE.exists():
-        events_text = EVENTS_FILE.read_text()
+        events_text = EVENTS_FILE.read_text().strip()
 
-    if not events_text.strip():
-        return QueryOut(answer="No events have been logged yet.")
+    diary_text = ""
+    if DIARY_FILE.exists():
+        diary_text = DIARY_FILE.read_text().strip()
+
+    if not events_text and not diary_text:
+        return QueryOut(answer="No data has been logged yet.")
 
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
@@ -124,14 +128,16 @@ def query_events(q: QueryIn) -> QueryOut:
             {
                 "role": "system",
                 "content": (
-                    "You are analyzing a personal event log. Each line below is a JSON event "
-                    "with fields: id, client_timestamp, received_at, type, text, metrics, meta. "
-                    "Answer the user's question based on these events. Be concise and helpful."
+                    "You are analyzing a personal health/life log containing two data sources:\n"
+                    "1. Events — each line is JSON with fields: id, client_timestamp, received_at, type, text, metrics, meta\n"
+                    "2. Diary entries — each line is JSON with fields: id, date, answers (object with keys like "
+                    "headaches, energy, gut, physical, hip_pain, mental, life, gratitude, activity), saved_at, meta\n\n"
+                    "Answer the user's question based on this data. Be concise and helpful."
                 ),
             },
             {
                 "role": "user",
-                "content": f"Events:\n{events_text}\n\nQuestion: {q.question}",
+                "content": f"Events:\n{events_text}\n\nDiary:\n{diary_text}\n\nQuestion: {q.question}",
             },
         ],
     )

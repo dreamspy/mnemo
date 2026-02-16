@@ -19,6 +19,7 @@
   const stateDiaryBulkScales = document.getElementById("state-diary-bulk-scales");
   const stateDiaryBulkText = document.getElementById("state-diary-bulk-text");
   const stateDiaryBulkParsing = document.getElementById("state-diary-bulk-parsing");
+  const stateQueue = document.getElementById("state-queue");
   const composeType = document.getElementById("compose-type");
   const inputText = document.getElementById("input-text");
   const inputMetrics = document.getElementById("input-metrics");
@@ -36,7 +37,7 @@
     stateDiaryDate, stateDiaryLoading, stateDiarySummary,
     stateDiaryStep, stateDiaryReview, stateDiarySaving,
     stateDiaryBulkScales, stateDiaryBulkText, stateDiaryBulkParsing,
-    stateHistory,
+    stateHistory, stateQueue,
   ];
 
   function showState(section) {
@@ -89,6 +90,215 @@
     return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, function (c) {
       return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
     });
+  }
+
+  // --- Offline queue ---
+
+  var QUEUE_KEY = "mnemo_queue";
+
+  function getQueue() {
+    try {
+      return JSON.parse(localStorage.getItem(QUEUE_KEY)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveQueue(queue) {
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  }
+
+  function addToQueue(kind, payload) {
+    var queue = getQueue();
+    queue.push({
+      id: generateUUID(),
+      created_at: new Date().toISOString(),
+      kind: kind,
+      status: "pending",
+      error: null,
+      payload: payload,
+    });
+    saveQueue(queue);
+    updateQueueBadge();
+  }
+
+  function removeFromQueue(id) {
+    var queue = getQueue().filter(function (item) { return item.id !== id; });
+    saveQueue(queue);
+    updateQueueBadge();
+  }
+
+  function getQueueItemLabel(item) {
+    if (item.kind === "event") {
+      return (item.payload.type || "Event") + ": " + (item.payload.text || "").slice(0, 40);
+    }
+    if (item.kind === "diary") {
+      return "Diary — " + (item.payload.date || "");
+    }
+    if (item.kind === "diary_bulk") {
+      return "Diary (quick) — " + (item.payload.date || "");
+    }
+    return item.kind;
+  }
+
+  function updateQueueBadge() {
+    var queue = getQueue();
+    var btn = document.getElementById("btn-queue");
+    var count = document.getElementById("queue-badge-count");
+    if (queue.length > 0) {
+      count.textContent = queue.length;
+      btn.classList.remove("hidden");
+    } else {
+      btn.classList.add("hidden");
+    }
+  }
+
+  function renderQueueScreen() {
+    var list = document.getElementById("queue-list");
+    list.innerHTML = "";
+    var queue = getQueue();
+
+    if (queue.length === 0) {
+      list.innerHTML = '<p class="history-empty">Queue is empty.</p>';
+      showState(stateQueue);
+      return;
+    }
+
+    queue.forEach(function (item) {
+      var row = document.createElement("div");
+      row.className = "queue-item";
+
+      var info = document.createElement("div");
+      info.className = "queue-item-info";
+
+      var label = document.createElement("div");
+      label.className = "queue-item-label";
+      label.textContent = getQueueItemLabel(item);
+
+      var meta = document.createElement("div");
+      meta.className = "queue-item-meta";
+      if (item.status === "failed" && item.error) {
+        meta.classList.add("failed");
+        meta.textContent = "Failed: " + item.error;
+      } else {
+        meta.textContent = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+      }
+
+      info.appendChild(label);
+      info.appendChild(meta);
+      row.appendChild(info);
+
+      var del = document.createElement("button");
+      del.className = "queue-item-delete";
+      del.textContent = "\u00D7";
+      del.title = "Remove";
+      del.addEventListener("click", function () {
+        removeFromQueue(item.id);
+        renderQueueScreen();
+      });
+      row.appendChild(del);
+
+      list.appendChild(row);
+    });
+
+    showState(stateQueue);
+  }
+
+  async function processQueue() {
+    var queue = getQueue();
+    if (queue.length === 0) return;
+
+    var token = getToken();
+    if (!token) return;
+
+    var headers = {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    };
+
+    for (var i = 0; i < queue.length; i++) {
+      var item = queue[i];
+      if (item.status !== "pending" && item.status !== "failed") continue;
+
+      // Mark syncing
+      item.status = "syncing";
+      item.error = null;
+      saveQueue(queue);
+
+      try {
+        if (item.kind === "event") {
+          var res = await fetch(API_BASE + "/events", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(item.payload),
+          });
+          if (!res.ok) {
+            var body = await res.json().catch(function () { return {}; });
+            throw new Error(body.detail || "HTTP " + res.status);
+          }
+        } else if (item.kind === "diary") {
+          var res = await fetch(API_BASE + "/diary", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(item.payload),
+          });
+          if (!res.ok) {
+            var body = await res.json().catch(function () { return {}; });
+            throw new Error(body.detail || "HTTP " + res.status);
+          }
+        } else if (item.kind === "diary_bulk") {
+          // Step 1: parse text
+          var questions = item.payload.questions;
+          var parseRes = await fetch(API_BASE + "/diary/parse-text", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({ raw_text: item.payload.raw_text, questions: questions }),
+          });
+          if (!parseRes.ok) {
+            var body = await parseRes.json().catch(function () { return {}; });
+            throw new Error(body.detail || "HTTP " + parseRes.status);
+          }
+          var parsed = await parseRes.json();
+
+          // Step 2: merge scale answers with parsed text answers
+          var mergedAnswers = Object.assign({}, item.payload.scale_answers);
+          Object.keys(parsed.answers).forEach(function (k) {
+            if (parsed.answers[k]) {
+              mergedAnswers[k] = parsed.answers[k];
+            }
+          });
+
+          // Step 3: save diary
+          var saveRes = await fetch(API_BASE + "/diary", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({ date: item.payload.date, answers: mergedAnswers }),
+          });
+          if (!saveRes.ok) {
+            var body = await saveRes.json().catch(function () { return {}; });
+            throw new Error(body.detail || "HTTP " + saveRes.status);
+          }
+        }
+
+        // Success — remove from queue
+        queue.splice(i, 1);
+        i--;
+        saveQueue(queue);
+      } catch (err) {
+        if (err instanceof TypeError) {
+          // Network failure — stop processing, revert to pending
+          item.status = "pending";
+          saveQueue(queue);
+          break;
+        }
+        // Server error — mark failed, continue
+        item.status = "failed";
+        item.error = err.message || "Unknown error";
+        saveQueue(queue);
+      }
+    }
+
+    updateQueueBadge();
   }
 
   // --- Event submission ---
@@ -146,6 +356,12 @@
       showToast("Logged", "success");
       resetToIdle();
     } catch (err) {
+      if (err instanceof TypeError) {
+        addToQueue("event", event);
+        showToast("Saved offline", "success");
+        resetToIdle();
+        return;
+      }
       showToast(err.message || "Network error", "error");
       showState(stateCompose);
     }
@@ -471,6 +687,21 @@
 
       renderDiaryReview();
     } catch (err) {
+      if (err instanceof TypeError) {
+        var scaleAnswers = {};
+        SCALE_QUESTIONS.forEach(function (q) {
+          if (diaryAnswers[q.key] !== undefined) scaleAnswers[q.key] = diaryAnswers[q.key];
+        });
+        addToQueue("diary_bulk", {
+          date: diaryDate,
+          scale_answers: scaleAnswers,
+          raw_text: rawText,
+          questions: questions,
+        });
+        showToast("Diary queued offline", "success");
+        resetToIdle();
+        return;
+      }
       showToast(err.message || "Network error", "error");
       showState(stateDiaryBulkText);
     }
@@ -658,6 +889,12 @@
       showToast("Diary saved", "success");
       resetToIdle();
     } catch (err) {
+      if (err instanceof TypeError) {
+        addToQueue("diary", { date: diaryDate, answers: diaryAnswers });
+        showToast("Diary saved offline", "success");
+        resetToIdle();
+        return;
+      }
       showToast(err.message || "Network error", "error");
       showState(stateDiaryReview);
     }
@@ -822,6 +1059,27 @@
   // --- Token button ---
 
   document.getElementById("btn-token").addEventListener("click", promptForToken);
+
+  // --- Offline queue UI ---
+
+  document.getElementById("btn-queue").addEventListener("click", renderQueueScreen);
+
+  document.getElementById("btn-queue-back").addEventListener("click", resetToIdle);
+
+  document.getElementById("btn-queue-sync").addEventListener("click", async function () {
+    await processQueue();
+    renderQueueScreen();
+  });
+
+  // --- Startup & online sync ---
+
+  updateQueueBadge();
+  processQueue();
+
+  window.addEventListener("online", function () {
+    showToast("Back online — syncing...", "success");
+    processQueue().then(updateQueueBadge);
+  });
 
   // --- Service worker registration ---
 

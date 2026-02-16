@@ -22,6 +22,9 @@
       <button id="btn-log" class="btn btn-log">Log</button>
       <button id="btn-diary" class="btn btn-diary">Diary</button>
       <button id="btn-history" class="btn btn-history">History</button>
+      <button id="btn-queue" class="btn btn-queue hidden">
+        <span id="queue-badge-count">0</span> pending
+      </button>
     </section>
 
     <!-- Diary: date picker -->
@@ -103,6 +106,16 @@
     <!-- Diary: saving -->
     <section id="state-diary-saving" class="state hidden">
       <p class="feedback">Saving...</p>
+    </section>
+
+    <!-- State: offline queue -->
+    <section id="state-queue" class="state hidden">
+      <p class="label">Offline Queue</p>
+      <div id="queue-list" class="queue-list"></div>
+      <div class="queue-actions">
+        <button class="btn btn-back" id="btn-queue-back">Back</button>
+        <button class="btn btn-submit" id="btn-queue-sync">Sync Now</button>
+      </div>
     </section>
 
     <!-- State: history -->

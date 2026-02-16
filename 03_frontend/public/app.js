@@ -474,8 +474,8 @@
     { key: "hip_pain", label: "Hip Pain", question: "How is your hip pain today?", type: "scale", min: 1, max: 10 },
     { key: "mental", label: "Mental / Emotional", question: "How is your mental or emotional state today?", type: "text" },
     { key: "life", label: "Life / Events", question: "What is happening in your life or on your mind today?", type: "text" },
-    { key: "gratitude", label: "Gratitude / Small Win", question: "What is one thing you're grateful for or a small win from today?", type: "text" },
     { key: "activity", label: "Physical Activity", question: "What physical activity did you do today, if any?", type: "text" },
+    { key: "gratitude", label: "Gratitude / Small Win", question: "What is one thing you're grateful for or a small win from today?", type: "text" },
   ];
 
   var SCALE_QUESTIONS = DIARY_QUESTIONS.filter(function (q) { return q.type === "scale"; });

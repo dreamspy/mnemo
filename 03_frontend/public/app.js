@@ -551,6 +551,12 @@
       document.getElementById("diary-summary-text").textContent = summaryText;
       showState(stateDiarySummary);
     } catch (err) {
+      if (err instanceof TypeError) {
+        // Offline — proceed without summary or pre-filled answers
+        document.getElementById("diary-summary-text").textContent = "Offline — summary not available.";
+        showState(stateDiarySummary);
+        return;
+      }
       showToast(err.message || "Network error", "error");
       showState(stateDiaryDate);
     }

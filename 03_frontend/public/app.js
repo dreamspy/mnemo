@@ -369,6 +369,8 @@
 
   // --- Event listeners ---
 
+  document.getElementById("btn-home").addEventListener("click", resetToIdle);
+
   document.getElementById("btn-log").addEventListener("click", function () {
     if (!getToken()) {
       promptForToken();

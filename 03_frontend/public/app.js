@@ -579,7 +579,7 @@
 
     if (hasExisting) {
       label.textContent = "Existing Entry";
-      DIARY_QUESTIONS.forEach(function (q) {
+      SCALE_QUESTIONS.concat(TEXT_QUESTIONS).forEach(function (q) {
         var ans = diaryAnswers[q.key];
         if (ans === undefined || ans === "") return;
         var item = document.createElement("div");
@@ -897,7 +897,7 @@
     var list = document.getElementById("diary-review-list");
     list.innerHTML = "";
 
-    DIARY_QUESTIONS.forEach(function (q) {
+    SCALE_QUESTIONS.concat(TEXT_QUESTIONS).forEach(function (q) {
       var item = document.createElement("div");
       item.className = "diary-review-item";
 
@@ -1093,7 +1093,7 @@
       return;
     }
 
-    DIARY_QUESTIONS.forEach(function (q) {
+    SCALE_QUESTIONS.concat(TEXT_QUESTIONS).forEach(function (q) {
       var ans = diary.answers[q.key];
       if (ans === undefined || ans === "") return;
 

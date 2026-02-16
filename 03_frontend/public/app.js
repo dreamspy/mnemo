@@ -538,9 +538,11 @@
       ]);
 
       // Pre-fill answers if existing entry
+      var hasExisting = false;
       if (entryRes.ok) {
         var entryData = await entryRes.json();
         diaryAnswers = entryData.answers || {};
+        hasExisting = Object.keys(diaryAnswers).length > 0;
       }
 
       // Show summary
@@ -551,11 +553,13 @@
       }
 
       document.getElementById("diary-summary-text").textContent = summaryText;
+      renderDiarySummaryActions(hasExisting);
       showState(stateDiarySummary);
     } catch (err) {
       if (err instanceof TypeError) {
         // Offline — proceed without summary or pre-filled answers
         document.getElementById("diary-summary-text").textContent = "Offline — summary not available.";
+        renderDiarySummaryActions(false);
         showState(stateDiarySummary);
         return;
       }
@@ -563,6 +567,42 @@
       showState(stateDiaryDate);
     }
   });
+
+  function renderDiarySummaryActions(hasExisting) {
+    var existingDiv = document.getElementById("diary-existing-entry");
+    var newActions = document.getElementById("diary-summary-new");
+    var existingActions = document.getElementById("diary-summary-existing");
+    var label = document.getElementById("diary-summary-label");
+
+    existingDiv.innerHTML = "";
+
+    if (hasExisting) {
+      label.textContent = "Existing Entry";
+      DIARY_QUESTIONS.forEach(function (q) {
+        var ans = diaryAnswers[q.key];
+        if (ans === undefined || ans === "") return;
+        var item = document.createElement("div");
+        item.className = "diary-review-item";
+        var lbl = document.createElement("div");
+        lbl.className = "review-label";
+        lbl.textContent = q.label;
+        var val = document.createElement("div");
+        val.className = "review-value";
+        val.textContent = ans;
+        item.appendChild(lbl);
+        item.appendChild(val);
+        existingDiv.appendChild(item);
+      });
+      existingDiv.classList.remove("hidden");
+      newActions.classList.add("hidden");
+      existingActions.classList.remove("hidden");
+    } else {
+      label.textContent = "Today's Events Summary";
+      existingDiv.classList.add("hidden");
+      newActions.classList.remove("hidden");
+      existingActions.classList.add("hidden");
+    }
+  }
 
   // Diary: continue from summary to first question (step-by-step)
   document.getElementById("btn-diary-continue").addEventListener("click", function () {
@@ -573,6 +613,15 @@
 
   // Diary: quick entry (bulk mode)
   document.getElementById("btn-diary-quick").addEventListener("click", function () {
+    diaryBulkMode = true;
+    renderBulkScales();
+  });
+
+  // Diary: existing entry — keep as-is
+  document.getElementById("btn-diary-keep").addEventListener("click", resetToIdle);
+
+  // Diary: existing entry — edit
+  document.getElementById("btn-diary-edit").addEventListener("click", function () {
     diaryBulkMode = true;
     renderBulkScales();
   });

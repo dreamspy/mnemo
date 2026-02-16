@@ -46,11 +46,16 @@
 
     <!-- Diary: summary -->
     <section id="state-diary-summary" class="state hidden">
-      <p class="label">Today's Events Summary</p>
+      <p class="label" id="diary-summary-label">Today's Events Summary</p>
       <div id="diary-summary-text" class="diary-summary-box"></div>
-      <div class="diary-summary-actions">
+      <div id="diary-existing-entry" class="diary-review-list hidden"></div>
+      <div id="diary-summary-new" class="diary-summary-actions">
         <button class="btn btn-quick" id="btn-diary-quick">Quick Entry</button>
         <button class="btn btn-submit" id="btn-diary-continue">Continue</button>
+      </div>
+      <div id="diary-summary-existing" class="diary-summary-actions hidden">
+        <button class="btn btn-quick" id="btn-diary-keep">Looks Good</button>
+        <button class="btn btn-submit" id="btn-diary-edit">Edit</button>
       </div>
     </section>
 

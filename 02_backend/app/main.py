@@ -265,8 +265,9 @@ def get_diary_summary(date: str) -> DiarySummaryOut:
             {
                 "role": "system",
                 "content": (
-                    "Summarize these personal log events as a brief context for a daily diary entry. "
-                    "Be concise — a few sentences at most."
+                    "List the key events from these personal log entries as brief bullet points for a daily diary. "
+                    "Use the original wording — do not embellish, interpret, or add details that aren't in the entries. "
+                    "Be concise."
                 ),
             },
             {

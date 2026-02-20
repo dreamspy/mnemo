@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const APP_VERSION = "0.1.4";
+  const APP_VERSION = "0.1.5";
 
   const isLocal = window.location.hostname === "localhost";
   const API_BASE = isLocal ? "http://localhost:8000" : "";
@@ -1122,17 +1122,19 @@
 
   // --- Hard refresh ---
 
-  document.getElementById("btn-refresh").addEventListener("click", async function () {
-    if (navigator.serviceWorker) {
-      var reg = await navigator.serviceWorker.getRegistration();
-      if (reg) await reg.unregister();
-    }
-    var names = await caches.keys();
-    await Promise.all(names.map(function (n) { return caches.delete(n); }));
-    // iOS PWA ignores reload() and serves from app shell cache;
-    // navigating with a cache-busting param forces a real network fetch
-    var url = window.location.pathname + "?_=" + Date.now();
-    window.location.replace(url);
+  document.getElementById("btn-refresh").addEventListener("click", function () {
+    // Clear caches in the background, navigate immediately
+    try {
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.getRegistration().then(function (reg) {
+          if (reg) reg.unregister();
+        });
+      }
+      caches.keys().then(function (names) {
+        names.forEach(function (n) { caches.delete(n); });
+      });
+    } catch (e) { /* ignore */ }
+    window.location.href = window.location.pathname + "?_=" + Date.now();
   });
 
   // --- Offline queue UI ---

@@ -514,6 +514,23 @@ body {
   color: var(--text);
 }
 
+.btn-refresh {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-refresh:hover {
+  color: var(--text);
+}
+
 /* Dialog */
 dialog {
   background: var(--bg-surface);

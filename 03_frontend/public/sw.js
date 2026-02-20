@@ -1,4 +1,4 @@
-var CACHE_NAME = "mnemo-v1";
+var CACHE_NAME = "mnemo-v2";
 var SHELL_FILES = [
   ".",
   "index.html",
@@ -31,12 +31,18 @@ self.addEventListener("activate", function (e) {
 });
 
 self.addEventListener("fetch", function (e) {
-  // Only cache GET requests for app shell; let API calls pass through
   if (e.request.method !== "GET") return;
 
+  // Network-first: try fresh content, fall back to cache when offline
   e.respondWith(
-    caches.match(e.request).then(function (cached) {
-      return cached || fetch(e.request);
+    fetch(e.request).then(function (response) {
+      var clone = response.clone();
+      caches.open(CACHE_NAME).then(function (cache) {
+        cache.put(e.request, clone);
+      });
+      return response;
+    }).catch(function () {
+      return caches.match(e.request);
     })
   );
 });

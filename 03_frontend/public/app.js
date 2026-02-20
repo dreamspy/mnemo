@@ -1118,6 +1118,18 @@
 
   document.getElementById("btn-token").addEventListener("click", promptForToken);
 
+  // --- Hard refresh ---
+
+  document.getElementById("btn-refresh").addEventListener("click", async function () {
+    if (navigator.serviceWorker) {
+      var reg = await navigator.serviceWorker.getRegistration();
+      if (reg) await reg.unregister();
+    }
+    var names = await caches.keys();
+    await Promise.all(names.map(function (n) { return caches.delete(n); }));
+    window.location.reload();
+  });
+
   // --- Offline queue UI ---
 
   document.getElementById("btn-queue").addEventListener("click", renderQueueScreen);

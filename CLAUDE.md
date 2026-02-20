@@ -47,6 +47,8 @@
 - Do not add database support.
 - Do not add complex auth flows — phase 1 is bearer token.
 - Test changes against the actual JSONL append workflow.
+- **Keep ALL READMEs in sync.** When changing any component, update the relevant README (`README.md`, `02_backend/README.md`, `03_frontend/README.md`, `05_scripts/README.md`) and the relevant files in `01_docs/`. If you add, remove, or change a script, endpoint, feature, or config option, the corresponding README must reflect it in the same commit.
+- **Bump version on every commit.** Version lives in `03_frontend/public/app.js` and `03_frontend/public/sw.js` (both `APP_VERSION`). Before committing, ask the user which digit to increment: major (1st), minor (2nd), or patch (3rd). Keep both files in sync.
 
 ## File Paths
 

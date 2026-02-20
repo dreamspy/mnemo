@@ -18,6 +18,7 @@
 ## Architecture Context
 
 - Single-user system
+- Production server: `mnemo.axex.is`
 - File-based event store (JSONL)
 - FastAPI backend served by Uvicorn behind Nginx behind Cloudflare
 - systemd manages the process

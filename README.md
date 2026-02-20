@@ -1,6 +1,6 @@
 # Mnemo
 
-**Domain:** mnemo.is
+**Server:** mnemo.axex.is
 
 A personal event-sourced logging engine designed to become an AI-augmented second brain.
 

@@ -98,7 +98,7 @@ Nginx proxies external HTTPS traffic to Uvicorn:
 ```nginx
 server {
     listen 80;
-    server_name mnemo.is;
+    server_name mnemo.axex.is;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
@@ -115,7 +115,7 @@ TLS is terminated at Cloudflare (Full mode) or locally with certbot depending on
 ## Cloudflare Integration
 
 Cloudflare provides:
-- **DNS:** `mnemo.is` points to the EC2 instance (proxied through Cloudflare)
+- **DNS:** `mnemo.axex.is` points to the EC2 instance (proxied through Cloudflare)
 - **DDoS protection:** Automatic
 - **TLS:** Full (strict) mode — Cloudflare terminates client TLS, connects to origin over TLS
 - **Caching:** Static assets cached at edge

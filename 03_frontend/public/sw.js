@@ -1,4 +1,5 @@
-var CACHE_NAME = "mnemo-v2";
+var APP_VERSION = "0.1.0";
+var CACHE_NAME = "mnemo-" + APP_VERSION;
 var SHELL_FILES = [
   ".",
   "index.html",

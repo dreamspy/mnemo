@@ -1,6 +1,8 @@
 (function () {
   "use strict";
 
+  const APP_VERSION = "0.1.0";
+
   const isLocal = window.location.hostname === "localhost";
   const API_BASE = isLocal ? "http://localhost:8000" : "";
 
@@ -1143,6 +1145,7 @@
 
   // --- Startup & online sync ---
 
+  document.getElementById("app-version").textContent = "v" + APP_VERSION;
   updateQueueBadge();
   processQueue();
 

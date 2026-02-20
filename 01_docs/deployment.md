@@ -19,7 +19,28 @@ Mnemo runs on an AWS EC2 instance (Ubuntu 22.04). Code is deployed to `/opt/mnem
 
 ## Code Deployment
 
-Code is deployed by pulling the repository to `/opt/mnemo/`:
+Deployment is automated with [Fabric](https://www.fabfile.org/) via `fabfile.py` in the project root. Requires `fabric` installed locally (`pipx install fabric`).
+
+### Quick Deploy
+
+```bash
+fab deploy
+```
+
+This pushes to `origin/main`, pulls on the server, and restarts the service.
+
+### Available Commands
+
+| Command | Description |
+|---|---|
+| `fab deploy` | Push, pull on server, restart mnemo |
+| `fab status` | Show mnemo service status |
+| `fab logs` | Tail last 50 log lines (`--lines=N` for more) |
+| `fab restart` | Restart the service |
+
+### Manual Deploy
+
+If needed, SSH in and run:
 
 ```bash
 cd /opt/mnemo

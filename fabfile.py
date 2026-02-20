@@ -3,7 +3,7 @@ import subprocess
 
 from fabric import task, Connection
 
-HOST = "ec2-34-255-100-55.eu-west-1.compute.amazonaws.com"
+HOST = "54.246.181.20"
 USER = "ubuntu"
 KEY = os.path.expanduser("~/.ssh/AWSKeypair.pem")
 

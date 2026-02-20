@@ -9,6 +9,7 @@ class EventType(str, Enum):
     intervention = "Intervention"
     symptom = "Symptom"
     decision = "Decision"
+    thought = "Thought"
 
 
 class EventMeta(BaseModel):

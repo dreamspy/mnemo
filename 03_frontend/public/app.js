@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const APP_VERSION = "0.1.3";
+  const APP_VERSION = "0.1.4";
 
   const isLocal = window.location.hostname === "localhost";
   const API_BASE = isLocal ? "http://localhost:8000" : "";
@@ -1129,7 +1129,10 @@
     }
     var names = await caches.keys();
     await Promise.all(names.map(function (n) { return caches.delete(n); }));
-    window.location.reload();
+    // iOS PWA ignores reload() and serves from app shell cache;
+    // navigating with a cache-busting param forces a real network fetch
+    var url = window.location.pathname + "?_=" + Date.now();
+    window.location.replace(url);
   });
 
   // --- Offline queue UI ---

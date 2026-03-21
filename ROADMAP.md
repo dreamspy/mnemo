@@ -70,6 +70,11 @@
 - [x] Remove the Metrics option from the logging form
 - [x] Add a "Submit & New" flow for rapid-fire logging (submit current log and immediately start a new one, possibly with inline type selection)
 
+## Phase 4.11 — History Editing
+
+- [ ] Allow editing of events from the history view
+- [ ] Allow editing of diary entries from the history view
+
 ## Phase 5 — Offline Queue ✅
 
 - [x] Queue events in IndexedDB/localStorage when offline
@@ -77,12 +82,12 @@
 - [x] Show pending/synced status indicators
 - [x] Handle conflicts gracefully
 
-## Phase 6 — Syncthing
+## Phase 6 — Syncthing ✅
 
-- [ ] Install Syncthing on server and Mac
-- [ ] Share `/var/lib/mnemo/`
-- [ ] Verify events.jsonl syncs to Mac
-- [ ] Test running scripts and Claude CLI against synced file
+- [x] Install Syncthing on server and Mac
+- [x] Share `/var/lib/mnemo/`
+- [x] Verify events.jsonl syncs to Mac
+- [x] Test running scripts and Claude CLI against synced file
 
 ## Phase 7 — Harden
 

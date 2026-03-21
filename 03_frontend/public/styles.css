@@ -160,9 +160,8 @@ body {
 }
 
 input[type="datetime-local"].input {
-  font-size: 1.1rem;
-  padding: 0.9rem 1rem;
-  min-height: 3rem;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
 }
 
 .compose-actions {

@@ -95,18 +95,66 @@
 - [x] Add basic rate limiting in Nginx
 - [x] Add security headers in Nginx (HSTS, X-Frame-Options, nosniff, XSS, referrer)
 - [x] Restrict EC2 security group to Cloudflare IPs only (ports 80/443)
-- [ ] ~~Set up log rotation~~ (deferred — logs are tiny)
+- [x] ~~Set up log rotation~~ (deferred — logs are tiny)
 - [x] ~~Automated backups of events.jsonl~~ (covered by Syncthing sync to Mac)
 - [ ] Set up Cloudflare app lockdown (replace IP lockdown)
 
 ## Phase 8 — Native App (learning project)
 
-- [ ] Pick a framework and set up the project
-- [ ] Connect to existing backend API (bearer token auth)
-- [ ] Replicate core logging flow (category → compose → submit)
-- [ ] Replicate history view with editing
-- [ ] Replicate diary flow
+- [x] Pick a framework (Expo / React Native) and set up the project
+- [x] Connect to existing backend API (bearer token auth)
+- [x] Replicate core logging flow (category → compose → submit)
+- [x] Replicate history view with editing
+- [x] Replicate diary flow
 - [ ] Explore native-only features (push notifications, haptics, etc.)
+
+### App Testing Checklist
+
+**Settings**
+- [x] Set token via Settings screen
+- [ ] Token persists after closing and reopening app
+
+**Logging**
+- [ ] Tap Log → see category picker with 5 categories
+- [ ] Select category → compose screen shows correct type label
+- [ ] Date/time picker opens and allows changing date
+- [ ] Enter text and submit → toast says "Logged"
+- [ ] Submit with empty text → error toast
+- [ ] "Submit & log another" → submits and opens new compose with selected type
+- [ ] Back button returns to category screen
+
+**History**
+- [ ] History loads today's events
+- [ ] Date picker changes date and reloads
+- [ ] Events tab shows event cards with type badge, time, text
+- [ ] Diary tab shows diary entries or "No diary entry" message
+- [ ] Edit button on event → opens compose pre-filled with event data
+- [ ] Edit and submit → toast says "Updated"
+- [ ] Back from edit returns to history
+- [ ] Edit Diary button → opens step-by-step wizard with existing answers
+
+**Diary**
+- [ ] Yesterday / Today buttons start diary flow
+- [ ] Summary screen shows AI-generated summary or "No events"
+- [ ] Existing entry shows "Looks Good" / "Edit" options
+- [ ] Step-by-step wizard: scale questions show 1-10 grid
+- [ ] Scale selection highlights correctly
+- [ ] Text questions show textarea
+- [ ] Prev/Next navigation works through all 10 questions
+- [ ] Review screen shows all answers
+- [ ] Edit from review goes back to last question
+- [ ] Save → toast says "Diary saved"
+
+**Offline**
+- [ ] Submit event while offline → toast says "Saved offline"
+- [ ] Pending badge appears on idle screen
+- [ ] Tapping pending syncs when back online
+
+**UI/UX**
+- [ ] Keyboard doesn't cover input fields
+- [ ] All screens scroll properly on small screens
+- [ ] Toast messages appear and disappear after 3 seconds
+- [ ] App theme matches web version (dark background, accent colors)
 
 ## Phase 9 — Multi-User (Google OAuth)
 

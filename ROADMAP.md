@@ -96,14 +96,14 @@
 - [x] Add basic rate limiting in Nginx
 - [x] Add security headers in Nginx (HSTS, X-Frame-Options, nosniff, XSS, referrer)
 - [x] Restrict EC2 security group to Cloudflare IPs only (ports 80/443)
-- [ ] Set up log rotation
-- [ ] Automated backups of events.jsonl
+- [ ] ~~Set up log rotation~~ (deferred — logs are tiny)
+- [x] ~~Automated backups of events.jsonl~~ (covered by Syncthing sync to Mac)
 - [ ] Set up Cloudflare app lockdown (replace IP lockdown)
 
-## Phase 8 — Multi-User
+## Phase 8 — Multi-User (via Cloudflare Access)
 
-- [ ] Add Gmail/Google OAuth authentication
-- [ ] Associate events with authenticated user identity
-- [ ] Per-user event storage (separate JSONL files or user-prefixed entries)
-- [ ] Update frontend to handle login/logout flow
-- [ ] Migrate from single bearer token to OAuth session management
+- [ ] Set up Cloudflare Access with Google login (replaces IP lockdown and bearer token)
+- [ ] Backend: read `Cf-Access-Authenticated-User-Email` header to identify user
+- [ ] Per-user JSONL storage (`/var/lib/mnemo/users/{email}/events.jsonl` and `diary.jsonl`)
+- [ ] Remove bearer token auth from backend
+- [ ] Remove token UI from frontend (settings gear, token dialog)

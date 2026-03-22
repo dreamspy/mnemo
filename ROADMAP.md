@@ -92,7 +92,7 @@
 ## Phase 7 — Harden
 
 - [ ] Review auth token handling
-- [ ] Set up Cloudflare TLS (Full strict)
+- [x] Set up Cloudflare TLS (Full strict)
 - [x] Add basic rate limiting in Nginx
 - [x] Add security headers in Nginx (HSTS, X-Frame-Options, nosniff, XSS, referrer)
 - [x] Restrict EC2 security group to Cloudflare IPs only (ports 80/443)

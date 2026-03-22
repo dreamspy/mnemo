@@ -1,7 +1,6 @@
-# Mnemo Work Log
+# HuXa Work Log
 
 ## Ideas
-- Possible future rename: **Nemor**
 
 ## 2026-02-14
 

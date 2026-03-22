@@ -1,12 +1,12 @@
-# Mnemo Scripts
+# HuXa Scripts
 
-Utility scripts for working with Mnemo's JSONL data files locally.
+Utility scripts for working with HuXa's JSONL data files locally.
 
 ## Scripts
 
 ### dev_server.sh
 
-Start both the backend (port 8000) and frontend (port 3000) for local development. Sets up the venv automatically on first run. Data is stored in `/tmp/mnemo_dev/` so it won't touch production files.
+Start both the backend (port 8000) and frontend (port 3000) for local development. Sets up the venv automatically on first run. Data is stored in `/tmp/huxa_dev/` so it won't touch production files.
 
 ```bash
 bash 05_scripts/dev_server.sh
@@ -47,7 +47,7 @@ python import_diary.py /path/to/obsidian/diary/ -o diary_import.jsonl
 The output file can then be appended to the production diary:
 
 ```bash
-cat diary_import.jsonl >> /var/lib/mnemo/diary.jsonl
+cat diary_import.jsonl >> /var/lib/huxa/diary.jsonl
 ```
 
 ### read_events.sh
@@ -60,7 +60,7 @@ bash read_events.sh
 
 ### setup_shortcuts.sh
 
-Creates convenience symlinks in `~/mnemo/` pointing to the server's runtime directories (`/opt/mnemo`, `/var/lib/mnemo`, `/var/log/mnemo`, `/etc/mnemo`). Run once on the Ubuntu server after deployment.
+Creates convenience symlinks in `~/huxa/` pointing to the server's runtime directories (`/opt/huxa`, `/var/lib/huxa`, `/var/log/huxa`, `/etc/huxa`). Run once on the Ubuntu server after deployment.
 
 ```bash
 bash setup_shortcuts.sh

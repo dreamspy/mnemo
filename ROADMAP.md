@@ -1,4 +1,4 @@
-	# Mnemo Build Roadmap
+	# HuXa Build Roadmap
 
 ## Phase 1 — Local Backend ✅
 
@@ -18,8 +18,8 @@
 ## Phase 3 — Server Setup ✅
 
 - [x] Provision EC2 instance (Ubuntu 24.04, eu-west-1)
-- [x] Create mnemo user and directory structure (`/opt`, `/var/lib`, `/var/log`, `/etc`)
-- [x] Clone repo to `/opt/mnemo/`
+- [x] Create huxa user and directory structure (`/opt`, `/var/lib`, `/var/log`, `/etc`)
+- [x] Clone repo to `/opt/huxa/`
 - [x] Set up Python venv on server
 - [x] Copy config and set auth token
 - [x] Install and start systemd service
@@ -85,7 +85,7 @@
 ## Phase 6 — Syncthing ✅
 
 - [x] Install Syncthing on server and Mac
-- [x] Share `/var/lib/mnemo/`
+- [x] Share `/var/lib/huxa/`
 - [x] Verify events.jsonl syncs to Mac
 - [x] Test running scripts and Claude CLI against synced file
 
@@ -156,6 +156,7 @@
 - [x] Submit event while offline → toast says "Saved offline"
 - [x] Pending badge appears on idle screen
 - [x] Tapping pending syncs when back online
+- [ ] Test if offline pending messages sync automatically when back online
 
 **UI/UX**
 - [x] Keyboard doesn't cover input fields
@@ -170,16 +171,17 @@
 - [ ] Handle web-incompatible components (e.g. `DateTimePicker` needs conditional rendering or web alternative)
 - [ ] Retire `03_frontend/` HTML version — one codebase for iOS, Android, and web
 
-## Phase 8.2 — Rebrand to Huxa
+## Phase 8.2 — Rebrand to HuXa
 
+- [x] Rename app throughout codebase (frontend, app, backend, configs)
 - [ ] Buy huxa.is domain
-- [ ] Rename app throughout codebase (frontend, app, backend, configs)
 - [ ] Update Cloudflare DNS and nginx for new domain
+- [ ] Rename server dirs and service files
 - [ ] New app icon and branding
 
 ## Phase 9 — GPT Query in App
 
-- [x] Add "Ask Mnemo" query input and answer display to Expo app
+- [x] Add "Ask HuXa" query input and answer display to Expo app
 
 ## Phase 10 — Standalone App on iPhone
 
@@ -203,7 +205,7 @@
 ## Phase 13 — Multi-User (Google OAuth)
 
 - [ ] Add Google OAuth login (backend endpoints for auth flow, JWT sessions)
-- [ ] Per-user JSONL storage (`/var/lib/mnemo/users/{email}/events.jsonl` and `diary.jsonl`)
+- [ ] Per-user JSONL storage (`/var/lib/huxa/users/{email}/events.jsonl` and `diary.jsonl`)
 - [ ] Add Google login to native app and web frontend
 - [ ] Replace bearer token with OAuth session
 - [ ] Remove token UI from web frontend (settings gear, token dialog)

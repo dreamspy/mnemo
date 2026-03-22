@@ -14,31 +14,31 @@ def _conn():
 
 @task
 def deploy(c):
-    """Push to main, pull on server, restart mnemo."""
+    """Push to main, pull on server, restart huxa."""
     subprocess.run(["git", "push", "origin", "main"], check=True)
     with _conn() as srv:
-        srv.run("cd /opt/mnemo && sudo git pull origin main")
-        srv.run("sudo systemctl restart mnemo")
-        srv.run("sudo systemctl status mnemo --no-pager")
+        srv.run("cd /opt/huxa && sudo git pull origin main")
+        srv.run("sudo systemctl restart huxa")
+        srv.run("sudo systemctl status huxa --no-pager")
 
 
 @task
 def status(c):
-    """Show mnemo service status."""
+    """Show huxa service status."""
     with _conn() as srv:
-        srv.run("sudo systemctl status mnemo --no-pager")
+        srv.run("sudo systemctl status huxa --no-pager")
 
 
 @task
 def logs(c, lines=50):
-    """Tail mnemo logs."""
+    """Tail huxa logs."""
     with _conn() as srv:
-        srv.run(f"journalctl -u mnemo -n {int(lines)} --no-pager")
+        srv.run(f"journalctl -u huxa -n {int(lines)} --no-pager")
 
 
 @task
 def restart(c):
-    """Restart mnemo service."""
+    """Restart huxa service."""
     with _conn() as srv:
-        srv.run("sudo systemctl restart mnemo")
-        srv.run("sudo systemctl status mnemo --no-pager")
+        srv.run("sudo systemctl restart huxa")
+        srv.run("sudo systemctl status huxa --no-pager")

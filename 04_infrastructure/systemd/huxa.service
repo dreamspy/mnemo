@@ -1,0 +1,20 @@
+[Unit]
+Description=HuXa Event Engine
+After=network.target
+
+[Service]
+Type=simple
+User=huxa
+Group=huxa
+WorkingDirectory=/opt/huxa/02_backend
+ExecStart=/opt/huxa/02_backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+Environment=HUXA_CONFIG=/etc/huxa/config.json
+Environment=HUXA_EVENTS_FILE=/var/lib/huxa/events.jsonl
+Environment=HUXA_DIARY_FILE=/var/lib/huxa/diary.jsonl
+Environment=HUXA_AUTH_TOKEN=
+Environment=OPENAI_API_KEY=
+
+[Install]
+WantedBy=multi-user.target

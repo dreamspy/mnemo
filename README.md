@@ -1,4 +1,4 @@
-# Mnemo
+# HuXa
 
 **Server:** mnemo.axex.is
 
@@ -6,9 +6,9 @@ A personal event-sourced logging engine designed to become an AI-augmented secon
 
 ## Vision
 
-Mnemo captures life events — interventions, symptoms, decisions, diary entries — as an append-only stream. Over time, this stream becomes the substrate for pattern recognition, trend analysis, and AI-driven insight generation.
+HuXa captures life events — interventions, symptoms, decisions, diary entries — as an append-only stream. Over time, this stream becomes the substrate for pattern recognition, trend analysis, and AI-driven insight generation.
 
-The goal is not to build yet another notes app. Mnemo is a structured event log with a clear migration path toward AI augmentation and richer clients.
+The goal is not to build yet another notes app. HuXa is a structured event log with a clear migration path toward AI augmentation and richer clients.
 
 ## Core Philosophy
 
@@ -56,14 +56,14 @@ Raw events are never modified. If correction is needed, a new corrective event i
 
 ### Server Runtime Layout
 
-Mnemo follows Linux filesystem conventions:
+HuXa follows Linux filesystem conventions:
 
 | Path | Purpose |
 |---|---|
-| `/opt/mnemo/` | Application code (git repo deployed here) |
-| `/var/lib/mnemo/` | Data: `events.jsonl` + `derived/` |
-| `/var/log/mnemo/` | Service logs |
-| `/etc/mnemo/` | Configuration files |
+| `/opt/huxa/` | Application code (git repo deployed here) |
+| `/var/lib/huxa/` | Data: `events.jsonl` + `derived/` |
+| `/var/log/huxa/` | Service logs |
+| `/etc/huxa/` | Configuration files |
 
 Code and data are strictly separated. The event file never lives inside the repo.
 
@@ -83,7 +83,7 @@ Uvicorn runs as a systemd service, ensuring automatic restarts, log management v
 
 ### Sync Strategy
 
-In phase 1, `/var/lib/mnemo/` is synced to a Mac via Syncthing. This enables:
+In phase 1, `/var/lib/huxa/` is synced to a Mac via Syncthing. This enables:
 - Local analysis with Claude CLI
 - Local analysis with Gemini CLI
 - Custom Python scripts against the raw JSONL
@@ -109,7 +109,7 @@ Phase 1 uses simple bearer token authentication. This is intentionally minimal �
 
 ## Database Migration Path
 
-Mnemo is designed so that migrating from JSONL to PostgreSQL is straightforward when scale demands it. The event schema maps directly to a single table. The append-only discipline means no complex migration of mutable state. This migration is not planned for v1.
+HuXa is designed so that migrating from JSONL to PostgreSQL is straightforward when scale demands it. The event schema maps directly to a single table. The append-only discipline means no complex migration of mutable state. This migration is not planned for v1.
 
 ## Repository Structure
 

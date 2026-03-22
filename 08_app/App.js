@@ -94,7 +94,7 @@ function AppContent() {
   var _y = useState(false), queryLoading = _y[0], setQueryLoading = _y[1];
 
   useEffect(function () {
-    AsyncStorage.getItem("mnemo_token").then(function (t) { if (t) setToken(t); });
+    AsyncStorage.getItem("huxa_token").then(function (t) { if (t) setToken(t); });
     loadQueue();
   }, []);
 
@@ -106,7 +106,7 @@ function AppContent() {
   function saveTokenFn() {
     var t = tokenInput.trim();
     if (t) {
-      AsyncStorage.setItem("mnemo_token", t);
+      AsyncStorage.setItem("huxa_token", t);
       setToken(t);
       showToastMsg("Token saved", "success");
       setScreen("idle");
@@ -118,13 +118,13 @@ function AppContent() {
   }
 
   function loadQueue() {
-    AsyncStorage.getItem("mnemo_queue").then(function (val) {
+    AsyncStorage.getItem("huxa_queue").then(function (val) {
       try { setQueue(JSON.parse(val || "[]")); } catch (e) { setQueue([]); }
     });
   }
 
   function saveQueueItems(items) {
-    AsyncStorage.setItem("mnemo_queue", JSON.stringify(items));
+    AsyncStorage.setItem("huxa_queue", JSON.stringify(items));
     setQueue(items);
   }
 
@@ -311,12 +311,12 @@ function AppContent() {
     return (
       <SafeAreaView style={st.container}>
         <StatusBar barStyle="light-content" />
-        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
         <View style={st.idleButtons}>
           <TouchableOpacity style={st.btn} onPress={function () { if (!token) setScreen("token"); else setScreen("category"); }}><Text style={st.btnText}>Log</Text></TouchableOpacity>
           <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={function () { if (!token) setScreen("token"); else { setDiaryDate(todayStr()); setScreen("diary-date"); } }}><Text style={st.btnText}>Diary</Text></TouchableOpacity>
           <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={openHistory}><Text style={st.btnText}>History</Text></TouchableOpacity>
-          <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={function () { if (!token) setScreen("token"); else { setQueryText(""); setQueryAnswer(""); setScreen("query"); } }}><Text style={st.btnText}>Ask Mnemo</Text></TouchableOpacity>
+          <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={function () { if (!token) setScreen("token"); else { setQueryText(""); setQueryAnswer(""); setScreen("query"); } }}><Text style={st.btnText}>Ask HuXa</Text></TouchableOpacity>
           {queue.length > 0 && <TouchableOpacity style={[st.btn, { backgroundColor: C.input }]} onPress={function () { processQueueFn(); showToastMsg("Syncing...", "success"); }}><Text style={st.btnText}>{queue.length} pending</Text></TouchableOpacity>}
         </View>
         <TouchableOpacity style={st.settingsBtn} onPress={function () { setTokenInput(token); setScreen("token"); }}><Text style={st.settingsBtnText}>Settings</Text></TouchableOpacity>
@@ -330,7 +330,7 @@ function AppContent() {
   if (screen === "token") {
     return (
       <SafeAreaView style={st.container}>
-        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
         <Text style={st.label}>Set API Token</Text>
         <TextInput style={st.input} placeholder="Bearer token" placeholderTextColor={C.muted} value={tokenInput} onChangeText={setTokenInput} autoCapitalize="none" autoCorrect={false} />
         <View style={st.row}>
@@ -345,7 +345,7 @@ function AppContent() {
   if (screen === "category") {
     return (
       <SafeAreaView style={st.container}>
-        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
         <Text style={st.label}>Category</Text>
         <View style={st.categoryGrid}>
           {CATEGORIES.map(function (cat) {
@@ -364,7 +364,7 @@ function AppContent() {
       <SafeAreaView style={st.container}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, width: "100%" }}>
           <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
-            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
             <Text style={st.label}>{editingEventId ? "Edit " : "New "}{selectedType}</Text>
             <View style={st.datePickerRow}>
               <DateTimePicker value={composeDate} mode="date" display="default" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />
@@ -401,8 +401,8 @@ function AppContent() {
       <SafeAreaView style={st.container}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, width: "100%" }}>
           <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
-            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
-            <Text style={st.label}>Ask Mnemo</Text>
+            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
+            <Text style={st.label}>Ask HuXa</Text>
             <TextInput
               style={st.input}
               placeholder="e.g. How many events this week?"
@@ -430,7 +430,7 @@ function AppContent() {
   if (screen === "history") {
     return (
       <SafeAreaView style={st.container}>
-        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
         <Text style={st.label}>History</Text>
         <View style={st.datePickerRow}>
           <DateTimePicker value={new Date(historyDate + "T12:00:00")} mode="date" display="default" themeVariant="dark" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} />
@@ -481,7 +481,7 @@ function AppContent() {
   if (screen === "diary-date") {
     return (
       <SafeAreaView style={st.container}>
-        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
         <Text style={st.label}>Diary - Pick a Date</Text>
         <View style={st.row}>
           <TouchableOpacity style={st.btnBack} onPress={function () { startDiary(yesterdayStr()); }}><Text style={st.btnBackText}>Yesterday</Text></TouchableOpacity>
@@ -503,7 +503,7 @@ function AppContent() {
     return (
       <SafeAreaView style={st.container}>
         <ScrollView contentContainerStyle={st.scrollContent}>
-          <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+          <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
           <Text style={st.label}>{diaryHasExisting ? "Existing Entry" : "Today's Events Summary"}</Text>
           <View style={st.summaryBox}><Text style={st.summaryText}>{diarySummary}</Text></View>
           {diaryHasExisting && SCALE_QUESTIONS.concat(TEXT_QUESTIONS).map(function (q) {
@@ -533,7 +533,7 @@ function AppContent() {
     return (
       <SafeAreaView style={st.container}>
         <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
-          <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+          <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
           <Text style={st.label}>Rate Your Day</Text>
           {SCALE_QUESTIONS.map(function (q) {
             var current = diaryAnswers[q.key];
@@ -573,7 +573,7 @@ function AppContent() {
       <SafeAreaView style={st.container}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, width: "100%" }}>
           <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
-            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
             <Text style={st.label}>Describe Your Day</Text>
             <View style={{ width: "100%", alignItems: "flex-start" }}>
               <Text style={{ color: C.muted, fontSize: 13, marginBottom: 8 }}>Answer any or all of these in one go:</Text>
@@ -636,7 +636,7 @@ function AppContent() {
       <SafeAreaView style={st.container}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, width: "100%" }}>
           <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
-            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
             <Text style={st.progressText}>{diaryStep + 1} / {DIARY_STEPS.length}</Text>
             <Text style={st.label}>{q.label}</Text>
             <Text style={st.question}>{q.question}</Text>
@@ -658,7 +658,7 @@ function AppContent() {
     return (
       <SafeAreaView style={st.container}>
         <ScrollView contentContainerStyle={st.scrollContent}>
-          <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+          <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
           <Text style={st.label}>Review Your Diary</Text>
           {SCALE_QUESTIONS.concat(TEXT_QUESTIONS).map(function (q) {
             var val = diaryAnswers[q.key];

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Start the Mnemo backend and frontend for local development.
-# Data is stored in /tmp/mnemo_dev/ so it won't affect production.
+# Start the HuXa backend and frontend for local development.
+# Data is stored in /tmp/huxa_dev/ so it won't affect production.
 
 set -euo pipefail
 
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$PROJECT_DIR/02_backend"
 FRONTEND_DIR="$PROJECT_DIR/03_frontend/public"
-DATA_DIR="/tmp/mnemo_dev"
+DATA_DIR="/tmp/huxa_dev"
 
 mkdir -p "$DATA_DIR"
 
@@ -26,13 +26,13 @@ if [ -f "$BACKEND_DIR/.env" ]; then
     set +a
 fi
 
-export MNEMO_AUTH_TOKEN="${MNEMO_AUTH_TOKEN:-dev-token}"
-export MNEMO_EVENTS_FILE="${MNEMO_EVENTS_FILE:-$DATA_DIR/events.jsonl}"
-export MNEMO_DIARY_FILE="${MNEMO_DIARY_FILE:-$DATA_DIR/diary.jsonl}"
+export HUXA_AUTH_TOKEN="${HUXA_AUTH_TOKEN:-dev-token}"
+export HUXA_EVENTS_FILE="${HUXA_EVENTS_FILE:-$DATA_DIR/events.jsonl}"
+export HUXA_DIARY_FILE="${HUXA_DIARY_FILE:-$DATA_DIR/diary.jsonl}"
 
 echo "Backend:  http://localhost:8000"
 echo "Frontend: http://localhost:3000"
-echo "Token:    $MNEMO_AUTH_TOKEN"
+echo "Token:    $HUXA_AUTH_TOKEN"
 echo "Data dir: $DATA_DIR"
 echo ""
 

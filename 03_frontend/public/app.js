@@ -61,11 +61,11 @@
   // --- Token management ---
 
   function getToken() {
-    return localStorage.getItem("mnemo_token") || (isLocal ? "dev-token" : null);
+    return localStorage.getItem("huxa_token") || (isLocal ? "dev-token" : null);
   }
 
   function setToken(token) {
-    localStorage.setItem("mnemo_token", token);
+    localStorage.setItem("huxa_token", token);
   }
 
   function promptForToken() {
@@ -97,7 +97,7 @@
 
   // --- Offline queue ---
 
-  var QUEUE_KEY = "mnemo_queue";
+  var QUEUE_KEY = "huxa_queue";
 
   function getQueue() {
     try {

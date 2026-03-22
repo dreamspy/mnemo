@@ -4,18 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1a1a2e">
-  <meta name="description" content="Mnemo — personal event logger">
+  <meta name="description" content="HuXa — personal event logger">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.svg">
   <link rel="stylesheet" href="styles.css">
-  <title>Mnemo</title>
+  <title>HuXa</title>
 </head>
 <body>
   <main id="app">
-    <h1 class="title" id="btn-home">Mnemo</h1>
+    <h1 class="title" id="btn-home">HuXa</h1>
 
     <!-- State: idle -->
     <section id="state-idle" class="state">
@@ -186,7 +186,7 @@
 
     <!-- Query section -->
     <section id="state-query" class="query-section">
-      <p class="label">Ask Mnemo</p>
+      <p class="label">Ask HuXa</p>
       <div class="query-input-row">
         <input id="query-input" class="input" type="text" placeholder="e.g. How many events this week?">
         <button class="btn btn-submit btn-ask" id="btn-ask">Ask</button>
@@ -203,7 +203,7 @@
   <dialog id="token-dialog">
     <form method="dialog">
       <h2>Set API Token</h2>
-      <p>Enter your Mnemo bearer token to connect to the backend.</p>
+      <p>Enter your HuXa bearer token to connect to the backend.</p>
       <input id="token-input" class="input" type="text" placeholder="Bearer token" autocomplete="off">
       <button class="btn btn-submit" id="btn-save-token">Save</button>
     </form>

@@ -1,6 +1,6 @@
-# Mnemo Backend
+# HuXa Backend
 
-FastAPI application for the Mnemo event engine.
+FastAPI application for the HuXa event engine.
 
 ## Endpoints
 
@@ -25,9 +25,9 @@ pip install -r requirements.txt
 Create a `.env` file (gitignored):
 
 ```bash
-MNEMO_AUTH_TOKEN=dev-token
-MNEMO_EVENTS_FILE=/tmp/mnemo_events.jsonl
-MNEMO_DIARY_FILE=/tmp/mnemo_diary.jsonl
+HUXA_AUTH_TOKEN=dev-token
+HUXA_EVENTS_FILE=/tmp/huxa_events.jsonl
+HUXA_DIARY_FILE=/tmp/huxa_diary.jsonl
 OPENAI_API_KEY=sk-...
 ```
 
@@ -42,8 +42,8 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 | Variable | Description |
 |---|---|
-| `MNEMO_EVENTS_FILE` | Path to events.jsonl (default: `/var/lib/mnemo/events.jsonl`) |
-| `MNEMO_DIARY_FILE` | Path to diary.jsonl (default: `/var/lib/mnemo/diary.jsonl`) |
-| `MNEMO_AUTH_TOKEN` | Bearer token for authentication |
+| `HUXA_EVENTS_FILE` | Path to events.jsonl (default: `/var/lib/huxa/events.jsonl`) |
+| `HUXA_DIARY_FILE` | Path to diary.jsonl (default: `/var/lib/huxa/diary.jsonl`) |
+| `HUXA_AUTH_TOKEN` | Bearer token for authentication |
 | `OPENAI_API_KEY` | OpenAI API key (required for `/query` and `/diary/{date}/summary`) |
-| `MNEMO_CONFIG` | Path to config.json (optional) |
+| `HUXA_CONFIG` | Path to config.json (optional) |

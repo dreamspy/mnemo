@@ -2,18 +2,18 @@
 
 ## Overview
 
-Mnemo runs on an AWS EC2 instance (Ubuntu 22.04). Code is deployed to `/opt/mnemo/`, data lives in `/var/lib/mnemo/`, and the FastAPI application is managed by systemd behind an Nginx reverse proxy with Cloudflare in front.
+HuXa runs on an AWS EC2 instance (Ubuntu 22.04). Code is deployed to `/opt/huxa/`, data lives in `/var/lib/huxa/`, and the FastAPI application is managed by systemd behind an Nginx reverse proxy with Cloudflare in front.
 
 ## Server Layout
 
 ```
-/opt/mnemo/              → Application code (git clone target)
-/var/lib/mnemo/
+/opt/huxa/              → Application code (git clone target)
+/var/lib/huxa/
     events.jsonl         → Raw event stream
     diary.jsonl          → Structured diary entries
     derived/             → Computed/aggregated data
-/var/log/mnemo/          → Application logs
-/etc/mnemo/
+/var/log/huxa/          → Application logs
+/etc/huxa/
     config.json          → Runtime configuration
 ```
 
@@ -33,8 +33,8 @@ This pushes to `origin/main`, pulls on the server, and restarts the service.
 
 | Command | Description |
 |---|---|
-| `fab deploy` | Push, pull on server, restart mnemo |
-| `fab status` | Show mnemo service status |
+| `fab deploy` | Push, pull on server, restart huxa |
+| `fab status` | Show huxa service status |
 | `fab logs` | Tail last 50 log lines (`--lines=N` for more) |
 | `fab restart` | Restart the service |
 
@@ -43,32 +43,32 @@ This pushes to `origin/main`, pulls on the server, and restarts the service.
 If needed, SSH in and run:
 
 ```bash
-cd /opt/mnemo
+cd /opt/huxa
 git pull origin main
 pip install -r 02_backend/requirements.txt
-sudo systemctl restart mnemo
+sudo systemctl restart huxa
 ```
 
 The repository contains application code only. Data, logs, and configuration are external to the repo.
 
 ## systemd Service
 
-The `mnemo.service` unit file (in `04_infrastructure/systemd/`) runs Uvicorn:
+The `huxa.service` unit file (in `04_infrastructure/systemd/`) runs Uvicorn:
 
 ```ini
 [Unit]
-Description=Mnemo Event Engine
+Description=HuXa Event Engine
 After=network.target
 
 [Service]
 Type=simple
-User=mnemo
-Group=mnemo
-WorkingDirectory=/opt/mnemo/02_backend
-ExecStart=/opt/mnemo/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+User=huxa
+Group=huxa
+WorkingDirectory=/opt/huxa/02_backend
+ExecStart=/opt/huxa/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
-Environment=MNEMO_CONFIG=/etc/mnemo/config.json
+Environment=HUXA_CONFIG=/etc/huxa/config.json
 
 [Install]
 WantedBy=multi-user.target
@@ -77,18 +77,18 @@ WantedBy=multi-user.target
 Key behaviors:
 - Uvicorn binds to `127.0.0.1:8000` (localhost only — Nginx handles external traffic)
 - Automatic restart on crash with 5-second delay
-- Runs as dedicated `mnemo` user for isolation
+- Runs as dedicated `huxa` user for isolation
 - Config path passed via environment variable
-- Logs go to journald (`journalctl -u mnemo`)
+- Logs go to journald (`journalctl -u huxa`)
 
 ### Service Management
 
 ```bash
-sudo systemctl start mnemo
-sudo systemctl stop mnemo
-sudo systemctl restart mnemo
-sudo systemctl status mnemo
-journalctl -u mnemo -f          # tail logs
+sudo systemctl start huxa
+sudo systemctl stop huxa
+sudo systemctl restart huxa
+sudo systemctl status huxa
+journalctl -u huxa -f          # tail logs
 ```
 
 ## Nginx Configuration
@@ -130,46 +130,46 @@ Cloudflare Zero Trust will be added in a future phase to:
 ## Initial Server Setup
 
 ```bash
-# Create mnemo user
-sudo useradd -r -s /bin/false mnemo
+# Create huxa user
+sudo useradd -r -s /bin/false huxa
 
 # Create directories
-sudo mkdir -p /opt/mnemo
-sudo mkdir -p /var/lib/mnemo/derived
-sudo mkdir -p /var/log/mnemo
-sudo mkdir -p /etc/mnemo
+sudo mkdir -p /opt/huxa
+sudo mkdir -p /var/lib/huxa/derived
+sudo mkdir -p /var/log/huxa
+sudo mkdir -p /etc/huxa
 
 # Set ownership
-sudo chown mnemo:mnemo /var/lib/mnemo
-sudo chown mnemo:mnemo /var/lib/mnemo/derived
-sudo chown mnemo:mnemo /var/log/mnemo
+sudo chown huxa:huxa /var/lib/huxa
+sudo chown huxa:huxa /var/lib/huxa/derived
+sudo chown huxa:huxa /var/log/huxa
 
 # Clone repo
-sudo git clone <repo-url> /opt/mnemo
+sudo git clone <repo-url> /opt/huxa
 
 # Set up Python venv
-sudo python3 -m venv /opt/mnemo/venv
-sudo /opt/mnemo/venv/bin/pip install -r /opt/mnemo/02_backend/requirements.txt
+sudo python3 -m venv /opt/huxa/venv
+sudo /opt/huxa/venv/bin/pip install -r /opt/huxa/02_backend/requirements.txt
 
 # Copy config
-sudo cp /opt/mnemo/06_config/config.example.json /etc/mnemo/config.json
+sudo cp /opt/huxa/06_config/config.example.json /etc/huxa/config.json
 # Edit config with real values
 
 # Install and enable service
-sudo cp /opt/mnemo/04_infrastructure/systemd/mnemo.service /etc/systemd/system/
+sudo cp /opt/huxa/04_infrastructure/systemd/huxa.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable mnemo
-sudo systemctl start mnemo
+sudo systemctl enable huxa
+sudo systemctl start huxa
 
 # Install Nginx config
-sudo cp /opt/mnemo/04_infrastructure/nginx/mnemo.conf /etc/nginx/sites-available/mnemo
-sudo ln -s /etc/nginx/sites-available/mnemo /etc/nginx/sites-enabled/
+sudo cp /opt/huxa/04_infrastructure/nginx/huxa.conf /etc/nginx/sites-available/huxa
+sudo ln -s /etc/nginx/sites-available/huxa /etc/nginx/sites-enabled/huxa
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
 ## Syncthing Sync
 
-Syncthing runs on both the EC2 server and the target Mac. The shared folder is `/var/lib/mnemo/`. The Mac receives a continuously updated copy of the full event stream and derived data.
+Syncthing runs on both the EC2 server and the target Mac. The shared folder is `/var/lib/huxa/`. The Mac receives a continuously updated copy of the full event stream and derived data.
 
 This enables local analysis with Claude CLI, Gemini CLI, and custom scripts.

@@ -27,10 +27,9 @@ app.add_middleware(
 )
 security = HTTPBearer()
 
-EVENTS_FILE = Path(os.environ.get("HUXA_EVENTS_FILE", "/var/lib/mnemo/events.jsonl"))
-DIARY_FILE = Path(os.environ.get("HUXA_DIARY_FILE", "/var/lib/mnemo/diary.jsonl"))
+EVENTS_FILE = Path(os.environ.get("HUXA_EVENTS_FILE", "/var/lib/huxa/events.jsonl"))
+DIARY_FILE = Path(os.environ.get("HUXA_DIARY_FILE", "/var/lib/huxa/diary.jsonl"))
 AUTH_TOKEN = os.environ.get("HUXA_AUTH_TOKEN", "")
-# NOTE: default paths still point to /var/lib/mnemo/ — update when server dirs are renamed
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 

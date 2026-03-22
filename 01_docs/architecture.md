@@ -2,7 +2,7 @@
 
 ## Why File-Based JSONL
 
-Mnemo stores all events in a single append-only JSONL file. This is an intentional choice, not a shortcut.
+HuXa stores all events in a single append-only JSONL file. This is an intentional choice, not a shortcut.
 
 ### Advantages
 
@@ -31,7 +31,7 @@ For a single-user system logging dozens of events per day, the tradeoffs strongl
 
 ## Event Sourcing
 
-Mnemo treats the event log as the source of truth. Events are immutable facts — something happened at a point in time. Any derived view (daily summaries, trend charts, pattern reports) is computed from the raw stream and stored separately in `/var/lib/mnemo/derived/`.
+HuXa treats the event log as the source of truth. Events are immutable facts — something happened at a point in time. Any derived view (daily summaries, trend charts, pattern reports) is computed from the raw stream and stored separately in `/var/lib/huxa/derived/`.
 
 This means:
 - The raw stream is never corrupted by derived logic
@@ -45,7 +45,7 @@ The file-based design means the data is always available locally on any machine 
 
 ## Sync to Mac
 
-Syncthing runs on both the EC2 server and the Mac. The `/var/lib/mnemo/` directory is a shared folder. Changes on the server (new appended events) propagate to the Mac within seconds.
+Syncthing runs on both the EC2 server and the Mac. The `/var/lib/huxa/` directory is a shared folder. Changes on the server (new appended events) propagate to the Mac within seconds.
 
 This enables:
 - Running Claude CLI against the full event history locally
@@ -61,8 +61,8 @@ Running Uvicorn manually (e.g., in a tmux session) is fragile:
 - No clean shutdown on reboot
 - No resource limits
 
-systemd solves all of these. The `mnemo.service` unit file defines:
-- Working directory (`/opt/mnemo/02_backend`)
+systemd solves all of these. The `huxa.service` unit file defines:
+- Working directory (`/opt/huxa/02_backend`)
 - Start command (`uvicorn app.main:app`)
 - Automatic restart on failure
 - Log routing to journald
@@ -72,7 +72,7 @@ This is the standard way to run services on Linux and costs zero additional comp
 
 ## Productization Path
 
-Mnemo is designed to grow:
+HuXa is designed to grow:
 
 1. **v1:** JSONL + FastAPI + PWA + Syncthing sync
 2. **v2:** Server-side analysis scripts (daily summaries, pattern detection)

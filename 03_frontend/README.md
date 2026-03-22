@@ -1,6 +1,6 @@
-# Mnemo Frontend
+# HuXa Frontend
 
-Web-first PWA for the Mnemo event engine. Vanilla HTML/CSS/JS — no build step, no dependencies.
+Web-first PWA for the HuXa event engine. Vanilla HTML/CSS/JS — no build step, no dependencies.
 
 ## Running Locally
 
@@ -14,13 +14,13 @@ Then open http://localhost:3000.
 
 ## Setup
 
-On first use, the app prompts for a bearer token. Enter the same value as the backend's `MNEMO_AUTH_TOKEN`.
+On first use, the app prompts for a bearer token. Enter the same value as the backend's `HUXA_AUTH_TOKEN`.
 
 For local dev with the backend:
 
 ```bash
 cd 02_backend
-MNEMO_EVENTS_FILE=./events.jsonl MNEMO_AUTH_TOKEN=dev-token ./venv/bin/uvicorn app.main:app --reload --port 8000
+HUXA_EVENTS_FILE=./events.jsonl HUXA_AUTH_TOKEN=dev-token ./venv/bin/uvicorn app.main:app --reload --port 8000
 ```
 
 ## UI Flow

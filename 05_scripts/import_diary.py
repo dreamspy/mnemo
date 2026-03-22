@@ -96,7 +96,7 @@ def main():
                 print(f"  Error: {e}")
 
     print(f"\nDone. Imported {count} entries to {output_path}")
-    print(f"To deploy: cat {output_path} >> /var/lib/mnemo/diary.jsonl")
+    print(f"To deploy: cat {output_path} >> /var/lib/huxa/diary.jsonl")
 
 
 if __name__ == "__main__":

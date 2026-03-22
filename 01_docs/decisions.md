@@ -8,8 +8,8 @@ All decisions listed here are **locked** for v1 unless explicitly revisited.
 |---|---|
 | Single append-only JSONL file | Locked |
 | No database in v1 | Locked |
-| Raw events in `/var/lib/mnemo/events.jsonl` | Locked |
-| Derived data in `/var/lib/mnemo/derived/` | Locked |
+| Raw events in `/var/lib/huxa/events.jsonl` | Locked |
+| Derived data in `/var/lib/huxa/derived/` | Locked |
 | Never edit or delete existing event lines | Locked |
 | Never mix raw and derived data | Locked |
 
@@ -62,17 +62,17 @@ All decisions listed here are **locked** for v1 unless explicitly revisited.
 | AWS EC2 (Ubuntu 22.04) | Locked |
 | Nginx reverse proxy | Locked |
 | Cloudflare DNS + protection | Locked |
-| Code in `/opt/mnemo/` | Locked |
-| Data in `/var/lib/mnemo/` | Locked |
-| Logs in `/var/log/mnemo/` | Locked |
-| Config in `/etc/mnemo/` | Locked |
+| Code in `/opt/huxa/` | Locked |
+| Data in `/var/lib/huxa/` | Locked |
+| Logs in `/var/log/huxa/` | Locked |
+| Config in `/etc/huxa/` | Locked |
 
 ## Sync
 
 | Decision | Status |
 |---|---|
 | Syncthing for server → Mac sync | Locked (phase 1) |
-| Sync target is `/var/lib/mnemo/` | Locked |
+| Sync target is `/var/lib/huxa/` | Locked |
 | File-based design to support local AI tools | Locked |
 
 ## Future (Not Yet Implemented)

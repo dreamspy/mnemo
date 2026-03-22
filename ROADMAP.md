@@ -125,20 +125,21 @@
 
 **History**
 - [x] History loads today's events
-- [ ] Date picker changes date and reloads
-	- [ ] date picker on history needs fixing
+- [x] Date picker changes date and reloads
+	- [x] date picker on history needs fixing
 - [x] Events tab shows event cards with type badge, time, text
 - [x] Diary tab shows diary entries or "No diary entry" message
-- [ ] Edit button on event → opens compose pre-filled with event data
-	- [ ] works but submit should go back to the event view with the same date
+- [x] Edit button on event → opens compose pre-filled with event data
+	- [x] works but submit should go back to the event view with the same date
 - [x] Edit and submit → toast says "Updated"
 - [x] Back from edit returns to history
 - [x] Edit Diary button → opens step-by-step wizard with existing answers
 
 **Diary**
-- [ ] Yesterday / Today buttons start diary flow
+- [x] Yesterday / Today buttons start diary flow
 - [ ] Summary screen shows AI-generated summary or "No events"
 - [ ] Existing entry shows "Looks Good" / "Edit" options
+	- [ ] doesn't show the entry
 - [ ] Step-by-step wizard: scale questions show 1-10 grid
 - [ ] Scale selection highlights correctly
 - [ ] Text questions show textarea
@@ -169,6 +170,8 @@
 
 - add button to delete diary and log entries
 - add proper application to iPhone
+- add a feature to log a feature idea / bug report
+- 
 
 ## Phase 10 — Smart Query (Embeddings / RAG)
 
@@ -178,3 +181,6 @@ The current `/query` endpoint sends the entire event log to GPT. At ~10 events/d
 - [ ] Store embeddings (vector file or lightweight vector DB)
 - [ ] Query by similarity: find relevant events, send only those to GPT
 - [ ] Fallback: add date range filter to `/query` endpoint as interim solution
+
+
+

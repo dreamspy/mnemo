@@ -9,6 +9,7 @@ import {
   Platform,
   StatusBar,
   KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -165,7 +166,9 @@ export default function App() {
           showToastMsg("Logged", "success");
           setSelectedType(nextType); setComposeText(""); setComposeDate(new Date()); setScreen("compose");
         } else {
-          showToastMsg(isEditing ? "Updated" : "Logged", "success"); setScreen("idle");
+          showToastMsg(isEditing ? "Updated" : "Logged", "success");
+          if (isEditing) { setScreen("history"); doFetchHistory(historyTab, historyDate); }
+          else { setScreen("idle"); }
         }
       })
       .catch(function (err) {
@@ -196,6 +199,28 @@ export default function App() {
 
   function editEvent(ev) {
     setEditingEventId(ev.id); setSelectedType(ev.type); setComposeText(ev.text); setComposeDate(new Date(ev.client_timestamp)); setScreen("compose");
+  }
+
+  function deleteEvent(ev) {
+    Alert.alert("Delete Event", "Are you sure you want to delete this event?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: function () {
+        fetch(API_BASE + "/events/" + ev.id, { method: "DELETE", headers: authHeaders() })
+          .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); showToastMsg("Deleted", "success"); doFetchHistory(historyTab, historyDate); })
+          .catch(function (err) { showToastMsg(err.message, "error"); });
+      }},
+    ]);
+  }
+
+  function deleteDiary(date) {
+    Alert.alert("Delete Diary", "Are you sure you want to delete this diary entry?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: function () {
+        fetch(API_BASE + "/diary/" + date, { method: "DELETE", headers: authHeaders() })
+          .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); showToastMsg("Deleted", "success"); doFetchHistory(historyTab, historyDate); })
+          .catch(function (err) { showToastMsg(err.message, "error"); });
+      }},
+    ]);
   }
 
   function startDiary(date) {
@@ -355,8 +380,9 @@ export default function App() {
       <SafeAreaView style={st.container}>
         <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
         <Text style={st.label}>History</Text>
-        <TouchableOpacity style={st.input} onPress={function () { setShowHistoryDatePicker(true); }}><Text style={st.inputText}>{historyDate}</Text></TouchableOpacity>
-        {showHistoryDatePicker && <DateTimePicker value={new Date(historyDate + "T12:00:00")} mode="date" display="default" onChange={function (e, date) { setShowHistoryDatePicker(Platform.OS === "ios"); if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} />}
+        <View style={st.datePickerRow}>
+          <DateTimePicker value={new Date(historyDate + "T12:00:00")} mode="date" display="default" themeVariant="dark" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} />
+        </View>
         <View style={st.historyTabs}>
           <TouchableOpacity style={[st.historyTab, historyTab === "events" && st.historyTabActive]} onPress={function () { setHistoryTab("events"); doFetchHistory("events", historyDate); }}><Text style={[st.historyTabText, historyTab === "events" && st.historyTabTextActive]}>Events</Text></TouchableOpacity>
           <TouchableOpacity style={[st.historyTab, historyTab === "diary" && st.historyTabActive]} onPress={function () { setHistoryTab("diary"); doFetchHistory("diary", historyDate); }}><Text style={[st.historyTabText, historyTab === "diary" && st.historyTabTextActive]}>Diary</Text></TouchableOpacity>
@@ -372,7 +398,10 @@ export default function App() {
                     <Text style={st.eventTime}>{formatTime(ev.client_timestamp)}</Text>
                   </View>
                   <Text style={st.eventText}>{ev.text}</Text>
-                  <TouchableOpacity style={st.editBtn} onPress={function () { editEvent(ev); }}><Text style={st.editBtnText}>Edit</Text></TouchableOpacity>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <TouchableOpacity style={st.editBtn} onPress={function () { editEvent(ev); }}><Text style={st.editBtnText}>Edit</Text></TouchableOpacity>
+                    <TouchableOpacity style={[st.editBtn, { borderColor: C.error }]} onPress={function () { deleteEvent(ev); }}><Text style={[st.editBtnText, { color: C.error }]}>Delete</Text></TouchableOpacity>
+                  </View>
                 </View>
               );
             })
@@ -383,7 +412,10 @@ export default function App() {
                 if (ans === undefined || ans === "") return null;
                 return <View key={q.key} style={st.reviewItem}><Text style={st.reviewLabel}>{q.label}</Text><Text style={st.reviewValue}>{ans}</Text></View>;
               })}
-              <TouchableOpacity style={st.editBtn} onPress={function () { setDiaryDate(historyDate); setDiaryAnswers(historyDiary.answers || {}); setDiaryStep(0); setScreen("diary-step"); }}><Text style={st.editBtnText}>Edit Diary</Text></TouchableOpacity>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <TouchableOpacity style={st.editBtn} onPress={function () { setDiaryDate(historyDate); setDiaryAnswers(historyDiary.answers || {}); setDiaryStep(0); setScreen("diary-step"); }}><Text style={st.editBtnText}>Edit Diary</Text></TouchableOpacity>
+                <TouchableOpacity style={[st.editBtn, { borderColor: C.error }]} onPress={function () { deleteDiary(historyDate); }}><Text style={[st.editBtnText, { color: C.error }]}>Delete Diary</Text></TouchableOpacity>
+              </View>
             </View>
           )}
         </ScrollView>

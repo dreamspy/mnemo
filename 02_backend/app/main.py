@@ -22,7 +22,7 @@ app = FastAPI(title="Mnemo", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://mnemo.axex.is", "http://localhost:3000"],
-    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 security = HTTPBearer()
@@ -78,7 +78,7 @@ def list_events(
         if filter_from <= day <= filter_to:
             by_id[entry["id"]] = entry
 
-    return [EventStored(**e) for e in by_id.values()]
+    return [EventStored(**e) for e in by_id.values() if not e.get("meta", {}).get("deleted")]
 
 
 @app.post("/events", status_code=201, dependencies=[Depends(verify_token)])
@@ -123,6 +123,22 @@ def update_event(event_id: str, event: EventIn) -> EventStored:
     return stored
 
 
+@app.delete("/events/{event_id}", dependencies=[Depends(verify_token)])
+def delete_event(event_id: str):
+    deleted = {
+        "id": event_id,
+        "client_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "received_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "type": "Event",
+        "text": "",
+        "metrics": {},
+        "meta": {"version": 1, "deleted": True},
+    }
+    with open(EVENTS_FILE, "a") as f:
+        f.write(json.dumps(deleted) + "\n")
+    return {"status": "deleted"}
+
+
 @app.post("/query", dependencies=[Depends(verify_token)])
 def query_events(q: QueryIn) -> QueryOut:
     if not OPENAI_API_KEY:
@@ -138,8 +154,8 @@ def query_events(q: QueryIn) -> QueryOut:
             if not line.strip():
                 continue
             entry = json.loads(line)
-            by_id[entry["id"]] = line
-        events_text = "\n".join(by_id.values())
+            by_id[entry["id"]] = (line, entry)
+        events_text = "\n".join(line for line, entry in by_id.values() if not entry.get("meta", {}).get("deleted"))
 
     diary_text = ""
     if DIARY_FILE.exists():
@@ -242,7 +258,7 @@ def get_diary(date: str) -> DiaryOut:
         if entry["date"] == date:
             latest = entry
 
-    if not latest:
+    if not latest or latest.get("meta", {}).get("deleted"):
         raise HTTPException(status_code=404, detail="No diary entry for this date")
 
     return DiaryOut(**latest)
@@ -268,6 +284,20 @@ def create_diary(diary: DiaryIn) -> DiaryOut:
     return stored
 
 
+@app.delete("/diary/{date}", dependencies=[Depends(verify_token)])
+def delete_diary(date: str):
+    deleted = {
+        "id": str(uuid.uuid4()),
+        "date": date,
+        "answers": {},
+        "saved_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "meta": {"version": 1, "deleted": True},
+    }
+    with open(DIARY_FILE, "a") as f:
+        f.write(json.dumps(deleted) + "\n")
+    return {"status": "deleted"}
+
+
 @app.get("/diary/{date}/summary", dependencies=[Depends(verify_token)])
 def get_diary_summary(date: str) -> DiarySummaryOut:
     if not OPENAI_API_KEY:
@@ -286,7 +316,7 @@ def get_diary_summary(date: str) -> DiarySummaryOut:
             ts = entry.get("client_timestamp", "")
             if ts.startswith(date):
                 by_id[entry["id"]] = entry
-    events = list(by_id.values())
+    events = [e for e in by_id.values() if not e.get("meta", {}).get("deleted")]
 
     if not events:
         return DiarySummaryOut(summary="No events logged for this date.")

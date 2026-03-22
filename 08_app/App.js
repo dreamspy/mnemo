@@ -11,12 +11,12 @@ import {
   KeyboardAvoidingView,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 const API_BASE = "https://mnemo.axex.is";
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "0.2.1";
 
 const C = {
   bg: "#1a1a2e",
@@ -44,6 +44,7 @@ const DIARY_QUESTIONS = [
 ];
 const SCALE_QUESTIONS = DIARY_QUESTIONS.filter(function (q) { return q.type === "scale"; });
 const TEXT_QUESTIONS = DIARY_QUESTIONS.filter(function (q) { return q.type === "text"; });
+const DIARY_STEPS = SCALE_QUESTIONS.concat(TEXT_QUESTIONS);
 const CATEGORIES = ["Event", "Intervention", "Symptom", "Decision", "Thought"];
 
 function generateUUID() {
@@ -58,6 +59,10 @@ function yesterdayStr() { var d = new Date(); d.setDate(d.getDate() - 1); return
 function formatTime(s) { return s ? s.slice(11, 16) : ""; }
 
 export default function App() {
+  return <SafeAreaProvider><AppContent /></SafeAreaProvider>;
+}
+
+function AppContent() {
   var _a = useState("idle"), screen = _a[0], setScreen = _a[1];
   var _b = useState(""), token = _b[0], setToken = _b[1];
   var _c = useState(""), tokenInput = _c[0], setTokenInput = _c[1];
@@ -84,6 +89,9 @@ export default function App() {
   var _v = useState(""), bulkText = _v[0], setBulkText = _v[1];
 
   var _u = useState([]), queue = _u[0], setQueue = _u[1];
+  var _w = useState(""), queryText = _w[0], setQueryText = _w[1];
+  var _x = useState(""), queryAnswer = _x[0], setQueryAnswer = _x[1];
+  var _y = useState(false), queryLoading = _y[0], setQueryLoading = _y[1];
 
   useEffect(function () {
     AsyncStorage.getItem("mnemo_token").then(function (t) { if (t) setToken(t); });
@@ -266,13 +274,25 @@ export default function App() {
       });
   }
 
-  function renderScaleGrid(questionKey, min, max) {
+  function submitQuery() {
+    var q = queryText.trim();
+    if (!q) return;
+    if (!token) { setScreen("token"); return; }
+    setQueryLoading(true);
+    setQueryAnswer("");
+    fetch(API_BASE + "/query", { method: "POST", headers: authHeaders(), body: JSON.stringify({ question: q }) })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+      .then(function (data) { setQueryAnswer(data.answer); setQueryLoading(false); })
+      .catch(function (err) { setQueryAnswer("Error: " + (err.message || "Network error")); setQueryLoading(false); });
+  }
+
+  function renderScaleGrid(questionKey, min, max, onSelect) {
     var current = diaryAnswers[questionKey];
     var buttons = [];
     for (var i = min; i <= max; i++) {
       (function (val) {
         buttons.push(
-          <TouchableOpacity key={val} style={[st.scaleBtn, current === val && st.scaleBtnSelected]} onPress={function () { setDiaryAnswer(questionKey, val); }}>
+          <TouchableOpacity key={val} style={[st.scaleBtn, current === val && st.scaleBtnSelected]} onPress={function () { setDiaryAnswer(questionKey, val); if (onSelect) setTimeout(onSelect, 200); }}>
             <Text style={[st.scaleBtnText, current === val && st.scaleBtnTextSelected]}>{val}</Text>
           </TouchableOpacity>
         );
@@ -296,6 +316,7 @@ export default function App() {
           <TouchableOpacity style={st.btn} onPress={function () { if (!token) setScreen("token"); else setScreen("category"); }}><Text style={st.btnText}>Log</Text></TouchableOpacity>
           <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={function () { if (!token) setScreen("token"); else { setDiaryDate(todayStr()); setScreen("diary-date"); } }}><Text style={st.btnText}>Diary</Text></TouchableOpacity>
           <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={openHistory}><Text style={st.btnText}>History</Text></TouchableOpacity>
+          <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={function () { if (!token) setScreen("token"); else { setQueryText(""); setQueryAnswer(""); setScreen("query"); } }}><Text style={st.btnText}>Ask Mnemo</Text></TouchableOpacity>
           {queue.length > 0 && <TouchableOpacity style={[st.btn, { backgroundColor: C.input }]} onPress={function () { processQueueFn(); showToastMsg("Syncing...", "success"); }}><Text style={st.btnText}>{queue.length} pending</Text></TouchableOpacity>}
         </View>
         <TouchableOpacity style={st.settingsBtn} onPress={function () { setTokenInput(token); setScreen("token"); }}><Text style={st.settingsBtnText}>Settings</Text></TouchableOpacity>
@@ -372,6 +393,37 @@ export default function App() {
   // --- SUBMITTING ---
   if (screen === "submitting") {
     return <SafeAreaView style={st.container}><Text style={st.label}>Submitting...</Text></SafeAreaView>;
+  }
+
+  // --- QUERY ---
+  if (screen === "query") {
+    return (
+      <SafeAreaView style={st.container}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, width: "100%" }}>
+          <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
+            <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
+            <Text style={st.label}>Ask Mnemo</Text>
+            <TextInput
+              style={st.input}
+              placeholder="e.g. How many events this week?"
+              placeholderTextColor={C.muted}
+              value={queryText}
+              onChangeText={setQueryText}
+              returnKeyType="send"
+              onSubmitEditing={submitQuery}
+            />
+            <View style={st.row}>
+              <TouchableOpacity style={st.btnBack} onPress={function () { setScreen("idle"); }}><Text style={st.btnBackText}>Back</Text></TouchableOpacity>
+              <TouchableOpacity style={st.btnSubmit} onPress={submitQuery}><Text style={st.btnSubmitText}>Ask</Text></TouchableOpacity>
+            </View>
+            {queryLoading && <Text style={[st.emptyText, { marginTop: 20 }]}>Thinking...</Text>}
+            {!queryLoading && queryAnswer !== "" && (
+              <View style={[st.summaryBox, { marginTop: 20 }]}><Text style={st.summaryText}>{queryAnswer}</Text></View>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
   }
 
   // --- HISTORY ---
@@ -454,10 +506,16 @@ export default function App() {
           <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
           <Text style={st.label}>{diaryHasExisting ? "Existing Entry" : "Today's Events Summary"}</Text>
           <View style={st.summaryBox}><Text style={st.summaryText}>{diarySummary}</Text></View>
+          {diaryHasExisting && SCALE_QUESTIONS.concat(TEXT_QUESTIONS).map(function (q) {
+            var ans = diaryAnswers[q.key];
+            if (ans === undefined || ans === "") return null;
+            var display = typeof ans === "object" ? String(ans) : String(ans);
+            return <View key={q.key} style={st.reviewItem}><Text style={st.reviewLabel}>{q.label}</Text><Text style={st.reviewValue}>{display}</Text></View>;
+          })}
           {diaryHasExisting ? (
             <View style={st.row}>
               <TouchableOpacity style={st.btnBack} onPress={function () { setScreen("idle"); }}><Text style={st.btnBackText}>Looks Good</Text></TouchableOpacity>
-              <TouchableOpacity style={st.btnSubmit} onPress={function () { setScreen("diary-bulk-scales"); }}><Text style={st.btnSubmitText}>Edit</Text></TouchableOpacity>
+              <TouchableOpacity style={st.btnSubmit} onPress={function () { setDiaryStep(0); setScreen("diary-step"); }}><Text style={st.btnSubmitText}>Edit</Text></TouchableOpacity>
             </View>
           ) : (
             <View style={st.row}>
@@ -517,13 +575,15 @@ export default function App() {
           <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
             <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
             <Text style={st.label}>Describe Your Day</Text>
-            <Text style={{ color: C.muted, fontSize: 13, marginBottom: 8 }}>Answer any or all of these in one go:</Text>
-            {TEXT_QUESTIONS.map(function (q) {
-              return <Text key={q.key} style={{ color: C.text, fontSize: 13, marginBottom: 2 }}>{"\u2022 " + q.label + " \u2014 " + q.question}</Text>;
-            })}
+            <View style={{ width: "100%", alignItems: "flex-start" }}>
+              <Text style={{ color: C.muted, fontSize: 13, marginBottom: 8 }}>Answer any or all of these in one go:</Text>
+              {TEXT_QUESTIONS.map(function (q) {
+                return <Text key={q.key} style={{ color: C.text, fontSize: 13, marginBottom: 2 }}>{"\u2022 " + q.label + " \u2014 " + q.question}</Text>;
+              })}
+            </View>
             <View style={{ height: 12 }} />
             <TextInput
-              style={[st.input, { minHeight: 120 }]}
+              style={[st.input, st.textArea, { minHeight: 120 }]}
               placeholder="Type or dictate your answers..."
               placeholderTextColor={C.muted}
               value={bulkText}
@@ -570,17 +630,17 @@ export default function App() {
 
   // --- DIARY STEP ---
   if (screen === "diary-step") {
-    var q = DIARY_QUESTIONS[diaryStep];
-    var isLast = diaryStep === DIARY_QUESTIONS.length - 1;
+    var q = DIARY_STEPS[diaryStep];
+    var isLast = diaryStep === DIARY_STEPS.length - 1;
     return (
       <SafeAreaView style={st.container}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, width: "100%" }}>
           <ScrollView contentContainerStyle={st.scrollContent} keyboardShouldPersistTaps="handled">
             <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>Mnemo</Text></TouchableOpacity>
-            <Text style={st.progressText}>{diaryStep + 1} / {DIARY_QUESTIONS.length}</Text>
+            <Text style={st.progressText}>{diaryStep + 1} / {DIARY_STEPS.length}</Text>
             <Text style={st.label}>{q.label}</Text>
             <Text style={st.question}>{q.question}</Text>
-            {q.type === "scale" ? renderScaleGrid(q.key, q.min, q.max) :
+            {q.type === "scale" ? renderScaleGrid(q.key, q.min, q.max, function () { if (isLast) setScreen("diary-review"); else setDiaryStep(diaryStep + 1); }) :
               <TextInput style={[st.input, st.textArea]} placeholder="Type your answer..." placeholderTextColor={C.muted} value={diaryAnswers[q.key] || ""} onChangeText={function (t) { setDiaryAnswer(q.key, t); }} multiline numberOfLines={3} />
             }
             <View style={st.row}>
@@ -605,7 +665,7 @@ export default function App() {
             return <View key={q.key} style={st.reviewItem}><Text style={st.reviewLabel}>{q.label}</Text><Text style={st.reviewValue}>{val !== undefined && val !== "" ? val : "\u2014"}</Text></View>;
           })}
           <View style={st.row}>
-            <TouchableOpacity style={st.btnBack} onPress={function () { setDiaryStep(DIARY_QUESTIONS.length - 1); setScreen("diary-step"); }}><Text style={st.btnBackText}>Edit</Text></TouchableOpacity>
+            <TouchableOpacity style={st.btnBack} onPress={function () { setDiaryStep(DIARY_STEPS.length - 1); setScreen("diary-step"); }}><Text style={st.btnBackText}>Edit</Text></TouchableOpacity>
             <TouchableOpacity style={st.btnSubmit} onPress={saveDiary}><Text style={st.btnSubmitText}>Save</Text></TouchableOpacity>
           </View>
         </ScrollView>
@@ -635,7 +695,7 @@ var st = StyleSheet.create({
   datePickerRow: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 16 },
   input: { width: "100%", backgroundColor: C.input, borderRadius: 25, padding: 14, color: C.text, fontSize: 16, marginBottom: 12 },
   inputText: { color: C.text, fontSize: 16 },
-  textArea: { minHeight: 80, textAlignVertical: "top" },
+  textArea: { minHeight: 80, textAlignVertical: "top", borderRadius: 12 },
   categoryGrid: { width: "100%", gap: 8 },
   categoryBtn: { backgroundColor: C.surface, borderRadius: 25, paddingVertical: 14, alignItems: "center" },
   categoryBtnText: { color: C.text, fontSize: 14, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 },
@@ -660,8 +720,8 @@ var st = StyleSheet.create({
   summaryText: { color: C.text, fontSize: 14, lineHeight: 20 },
   progressText: { color: C.muted, fontSize: 12, marginBottom: 8 },
   question: { color: C.text, fontSize: 16, marginBottom: 16, textAlign: "center" },
-  scaleGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 16, width: "100%" },
-  scaleBtn: { backgroundColor: C.surface, borderRadius: 8, width: 44, height: 44, alignItems: "center", justifyContent: "center" },
+  scaleGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 8, marginBottom: 16, width: "100%" },
+  scaleBtn: { backgroundColor: C.surface, borderRadius: 8, width: "18%", height: 50, alignItems: "center", justifyContent: "center" },
   scaleBtnSelected: { backgroundColor: C.accent },
   scaleBtnText: { color: C.text, fontSize: 16, fontWeight: "600" },
   scaleBtnTextSelected: { color: "#fff" },

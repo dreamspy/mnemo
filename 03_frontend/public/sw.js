@@ -1,4 +1,4 @@
-var APP_VERSION = "0.1.12";
+var APP_VERSION = "0.2.1";
 var CACHE_NAME = "mnemo-" + APP_VERSION;
 var SHELL_FILES = [
   ".",

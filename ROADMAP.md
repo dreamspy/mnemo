@@ -97,7 +97,7 @@
 - [x] Restrict EC2 security group to Cloudflare IPs only (ports 80/443)
 - [x] ~~Set up log rotation~~ (deferred — logs are tiny)
 - [x] ~~Automated backups of events.jsonl~~ (covered by Syncthing sync to Mac)
-- [ ] Set up Cloudflare app lockdown (replace IP lockdown)
+
 
 ## Phase 8 — Native App (learning project)
 
@@ -112,7 +112,7 @@
 
 **Settings**
 - [x] Set token via Settings screen
-- [ ] Token persists after closing and reopening app
+- [x] Token persists after closing and reopening app
 
 **Logging**
 - [x] Tap Log → see category picker with 5 categories
@@ -137,29 +137,59 @@
 
 **Diary**
 - [x] Yesterday / Today buttons start diary flow
-- [ ] Summary screen shows AI-generated summary or "No events"
-- [ ] Existing entry shows "Looks Good" / "Edit" options
-	- [ ] doesn't show the entry
-- [ ] Step-by-step wizard: scale questions show 1-10 grid
-- [ ] Scale selection highlights correctly
-- [ ] Text questions show textarea
-- [ ] Prev/Next navigation works through all 10 questions
-- [ ] Review screen shows all answers
-- [ ] Edit from review goes back to last question
-- [ ] Save → toast says "Diary saved"
+- [x] Summary screen shows AI-generated summary or "No events"
+- [x] Existing entry shows "Looks Good" / "Edit" options
+	- [x] doesn't show the entry
+- [x] Step-by-step wizard: scale questions show 1-10 grid
+	- [x] yes but it should be 1-5 on one line and 6-10 in the next. Also the order is not right. The number questions should come first, and then the text questions
+- [x] Scale selection highlights correctly
+- [x] Text questions show textarea
+- [x] Prev/Next navigation works through all 10 questions
+- [x] Review screen shows all answers
+- [x] Edit from review goes back to last question
+- [x] Save → toast says "Diary saved"
+- [x] when editing an existing diary entry, it goes to quick mode, should go to step by step mode
+- [x] pressing a number on a scale should auto submit
+- [ ] quick entry, gut status text is indented
 
 **Offline**
-- [ ] Submit event while offline → toast says "Saved offline"
-- [ ] Pending badge appears on idle screen
-- [ ] Tapping pending syncs when back online
+- [x] Submit event while offline → toast says "Saved offline"
+- [x] Pending badge appears on idle screen
+- [x] Tapping pending syncs when back online
 
 **UI/UX**
-- [ ] Keyboard doesn't cover input fields
-- [ ] All screens scroll properly on small screens
-- [ ] Toast messages appear and disappear after 3 seconds
-- [ ] App theme matches web version (dark background, accent colors)
+- [x] Keyboard doesn't cover input fields
+- [x] All screens scroll properly on small screens
+- [x] Toast messages appear and disappear after 3 seconds
+- [x] App theme matches web version (dark background, accent colors)
 
-## Phase 9 — Multi-User (Google OAuth)
+# Phase 8.1 New name
+- [ ] Find new name
+
+## Phase 9 — GPT Query in App
+
+- [x] Add "Ask Mnemo" query input and answer display to Expo app
+
+## Phase 10 — Standalone App on iPhone
+
+- [ ] Get Apple Developer account ($99/year)
+- [ ] Install EAS CLI (`npm install -g eas-cli`)
+- [ ] Configure `eas.json` and app signing
+- [ ] App icon and splash screen
+- [ ] Build standalone `.ipa` with `eas build --platform ios`
+- [ ] Distribute via TestFlight for personal use
+- [ ] (Optional) Submit to App Store for public distribution
+
+## Phase 11 — Cloudflare App Lockdown
+
+- [ ] Set up Cloudflare Access or app lockdown (replace IP lockdown)
+
+## Phase 12 — Feature Ideas / Bug Reports
+
+- [ ] Add in-app feature to log a feature idea or bug report
+- [ ] Store in separate JSONL or send to GitHub Issues
+
+## Phase 13 — Multi-User (Google OAuth)
 
 - [ ] Add Google OAuth login (backend endpoints for auth flow, JWT sessions)
 - [ ] Per-user JSONL storage (`/var/lib/mnemo/users/{email}/events.jsonl` and `diary.jsonl`)
@@ -167,13 +197,12 @@
 - [ ] Replace bearer token with OAuth session
 - [ ] Remove token UI from web frontend (settings gear, token dialog)
 
+## Phase 14 — Dark / Light Mode
 
-- add button to delete diary and log entries
-- add proper application to iPhone
-- add a feature to log a feature idea / bug report
-- 
+- [ ] Add theme toggle to app and web frontend
+- [ ] Persist preference in AsyncStorage / localStorage
 
-## Phase 10 — Smart Query (Embeddings / RAG)
+## Phase 15 — Smart Query (Embeddings / RAG)
 
 The current `/query` endpoint sends the entire event log to GPT. At ~10 events/day, the log will exceed GPT-4o-mini's 128K token context window within 6-12 months. An embeddings-based approach finds only the relevant events for each query, making it scale to years of data without hitting token limits.
 
@@ -181,6 +210,4 @@ The current `/query` endpoint sends the entire event log to GPT. At ~10 events/d
 - [ ] Store embeddings (vector file or lightweight vector DB)
 - [ ] Query by similarity: find relevant events, send only those to GPT
 - [ ] Fallback: add date range filter to `/query` endpoint as interim solution
-
-
 

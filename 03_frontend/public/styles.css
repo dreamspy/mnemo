@@ -493,6 +493,17 @@ input[type="datetime-local"].input {
   margin-bottom: 0.35rem;
 }
 
+.btn-edit {
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--text-muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
 .event-type-badge {
   font-size: 0.7rem;
   font-weight: 600;

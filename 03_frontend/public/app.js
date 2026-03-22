@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const APP_VERSION = "0.1.10";
+  const APP_VERSION = "0.1.11";
 
   const isLocal = window.location.hostname === "localhost";
   const API_BASE = isLocal ? "http://localhost:8000" : "";
@@ -30,6 +30,7 @@
   const tokenInput = document.getElementById("token-input");
 
   let selectedType = null;
+  var editingEventId = null;
   var diaryBulkMode = false;
 
   // --- State transitions ---
@@ -51,6 +52,7 @@
 
   function resetToIdle() {
     selectedType = null;
+    editingEventId = null;
     diaryBulkMode = false;
     inputText.value = "";
     showState(stateIdle);
@@ -59,7 +61,7 @@
   // --- Token management ---
 
   function getToken() {
-    return localStorage.getItem("mnemo_token") || (isLocal ? "local" : null);
+    return localStorage.getItem("mnemo_token") || (isLocal ? "dev-token" : null);
   }
 
   function setToken(token) {
@@ -326,8 +328,11 @@
       clientTs = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
     }
 
+    var isEditing = !!editingEventId;
+    var eventId = isEditing ? editingEventId : generateUUID();
+
     var event = {
-      id: generateUUID(),
+      id: eventId,
       client_timestamp: clientTs,
       type: selectedType,
       text: text,
@@ -336,6 +341,7 @@
     };
 
     function onSuccess() {
+      editingEventId = null;
       if (nextType) {
         showToast("Logged — next: " + nextType, "success");
         selectedType = nextType;
@@ -345,14 +351,15 @@
         showState(stateCompose);
         inputText.focus();
       } else {
-        showToast("Logged", "success");
+        showToast(isEditing ? "Updated" : "Logged", "success");
         resetToIdle();
       }
     }
 
     try {
-      var res = await fetch(API_BASE + "/events", {
-        method: "POST",
+      var url = isEditing ? API_BASE + "/events/" + eventId : API_BASE + "/events";
+      var res = await fetch(url, {
+        method: isEditing ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + token,
@@ -402,8 +409,9 @@
 
   document.querySelectorAll("#state-category .btn-category").forEach(function (btn) {
     btn.addEventListener("click", function () {
+      editingEventId = null;
       selectedType = btn.dataset.type;
-      composeType.textContent = selectedType;
+      document.getElementById("compose-label").innerHTML = "New <span id=\"compose-type\">" + selectedType + "</span>";
       setComposeDateTime();
       showState(stateCompose);
       inputText.focus();
@@ -419,7 +427,13 @@
   document.getElementById("btn-back-category").addEventListener("click", resetToIdle);
 
   document.getElementById("btn-back-compose").addEventListener("click", function () {
-    showState(stateCategory);
+    if (editingEventId) {
+      editingEventId = null;
+      showState(stateHistory);
+      fetchHistory();
+    } else {
+      showState(stateCategory);
+    }
   });
 
   document.getElementById("btn-submit").addEventListener("click", function () {
@@ -1081,6 +1095,26 @@
     }
   }
 
+  function editEvent(ev) {
+    editingEventId = ev.id;
+    selectedType = ev.type;
+    document.getElementById("compose-label").textContent = "Edit " + ev.type;
+    composeType.textContent = ev.type;
+
+    // Parse timestamp to local datetime-local format
+    var d = new Date(ev.client_timestamp);
+    var y = d.getFullYear();
+    var mo = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    var hh = String(d.getHours()).padStart(2, "0");
+    var mm = String(d.getMinutes()).padStart(2, "0");
+    inputDatetime.value = y + "-" + mo + "-" + day + "T" + hh + ":" + mm;
+
+    inputText.value = ev.text;
+    showState(stateCompose);
+    inputText.focus();
+  }
+
   function renderEvents(events) {
     historyResults.innerHTML = "";
     if (!events.length) {
@@ -1110,8 +1144,16 @@
       text.className = "event-text";
       text.textContent = ev.text;
 
+      var editBtn = document.createElement("button");
+      editBtn.className = "btn btn-edit";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", function () {
+        editEvent(ev);
+      });
+
       card.appendChild(header);
       card.appendChild(text);
+      card.appendChild(editBtn);
       historyResults.appendChild(card);
     });
   }
@@ -1142,6 +1184,19 @@
       item.appendChild(value);
       historyResults.appendChild(item);
     });
+
+    var editBtn = document.createElement("button");
+    editBtn.className = "btn btn-edit";
+    editBtn.textContent = "Edit Diary";
+    editBtn.addEventListener("click", function () {
+      var dateVal = historyRangeCheck.checked ? historyDateFrom.value : historyDateInput.value;
+      diaryDate = dateVal;
+      diaryAnswers = diary.answers || {};
+      diaryBulkMode = false;
+      diaryStepIndex = 0;
+      renderDiaryStep();
+    });
+    historyResults.appendChild(editBtn);
   }
 
   // --- Token button ---

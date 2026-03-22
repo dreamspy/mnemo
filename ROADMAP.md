@@ -70,10 +70,10 @@
 - [x] Remove the Metrics option from the logging form
 - [x] Add a "Submit & New" flow for rapid-fire logging (submit current log and immediately start a new one, possibly with inline type selection)
 
-## Phase 4.11 — History Editing
+## Phase 4.11 — History Editing ✅
 
-- [ ] Allow editing of events from the history view
-- [ ] Allow editing of diary entries from the history view
+- [x] Allow editing of events from the history view
+- [x] Allow editing of diary entries from the history view
 
 ## Phase 5 — Offline Queue ✅
 
@@ -91,7 +91,6 @@
 
 ## Phase 7 — Harden
 
-- [ ] Review auth token handling
 - [x] Set up Cloudflare TLS (Full strict)
 - [x] Add basic rate limiting in Nginx
 - [x] Add security headers in Nginx (HSTS, X-Frame-Options, nosniff, XSS, referrer)

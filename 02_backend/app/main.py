@@ -22,7 +22,7 @@ app = FastAPI(title="Mnemo", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://mnemo.axex.is", "http://localhost:3000"],
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 security = HTTPBearer()
@@ -67,7 +67,8 @@ def list_events(
     else:
         filter_from = filter_to = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    results = []
+    # Use dict to deduplicate by ID (latest version wins)
+    by_id = {}
     for line in EVENTS_FILE.read_text().strip().splitlines():
         if not line.strip():
             continue
@@ -75,9 +76,9 @@ def list_events(
         ts = entry.get("client_timestamp", "")
         day = ts[:10]
         if filter_from <= day <= filter_to:
-            results.append(EventStored(**entry))
+            by_id[entry["id"]] = entry
 
-    return results
+    return [EventStored(**e) for e in by_id.values()]
 
 
 @app.post("/events", status_code=201, dependencies=[Depends(verify_token)])
@@ -95,6 +96,26 @@ def create_event(event: EventIn) -> EventStored:
     )
 
     EVENTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(EVENTS_FILE, "a") as f:
+        f.write(json.dumps(stored.model_dump(), default=str) + "\n")
+
+    return stored
+
+
+@app.put("/events/{event_id}", dependencies=[Depends(verify_token)])
+def update_event(event_id: str, event: EventIn) -> EventStored:
+    received_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    stored = EventStored(
+        id=event_id,
+        client_timestamp=event.client_timestamp,
+        received_at=received_at,
+        type=event.type,
+        text=event.text,
+        metrics=event.metrics,
+        meta=event.meta,
+    )
 
     with open(EVENTS_FILE, "a") as f:
         f.write(json.dumps(stored.model_dump(), default=str) + "\n")

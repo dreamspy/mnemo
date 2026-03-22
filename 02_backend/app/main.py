@@ -18,7 +18,7 @@ from app.models.event import (
 
 import uuid
 
-app = FastAPI(title="Mnemo", version="0.1.0")
+app = FastAPI(title="HuXa", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://mnemo.axex.is", "http://localhost:3000"],
@@ -27,9 +27,10 @@ app.add_middleware(
 )
 security = HTTPBearer()
 
-EVENTS_FILE = Path(os.environ.get("MNEMO_EVENTS_FILE", "/var/lib/mnemo/events.jsonl"))
-DIARY_FILE = Path(os.environ.get("MNEMO_DIARY_FILE", "/var/lib/mnemo/diary.jsonl"))
-AUTH_TOKEN = os.environ.get("MNEMO_AUTH_TOKEN", "")
+EVENTS_FILE = Path(os.environ.get("HUXA_EVENTS_FILE", "/var/lib/mnemo/events.jsonl"))
+DIARY_FILE = Path(os.environ.get("HUXA_DIARY_FILE", "/var/lib/mnemo/diary.jsonl"))
+AUTH_TOKEN = os.environ.get("HUXA_AUTH_TOKEN", "")
+# NOTE: default paths still point to /var/lib/mnemo/ — update when server dirs are renamed
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 
@@ -78,7 +79,9 @@ def list_events(
         if filter_from <= day <= filter_to:
             by_id[entry["id"]] = entry
 
-    return [EventStored(**e) for e in by_id.values() if not e.get("meta", {}).get("deleted")]
+    results = [EventStored(**e) for e in by_id.values() if not e.get("meta", {}).get("deleted")]
+    results.sort(key=lambda e: e.client_timestamp, reverse=True)
+    return results
 
 
 @app.post("/events", status_code=201, dependencies=[Depends(verify_token)])

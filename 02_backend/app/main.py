@@ -350,7 +350,7 @@ def get_diary_summary(date: str) -> DiarySummaryOut:
     return DiarySummaryOut(summary=response.choices[0].message.content)
 
 
-@app.post("/feedback", status_code=201, dependencies=[Depends(verify_token)])
+@app.post("/reports", status_code=201, dependencies=[Depends(verify_token)])
 def create_feedback(fb: FeedbackIn) -> FeedbackOut:
     created_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -369,7 +369,7 @@ def create_feedback(fb: FeedbackIn) -> FeedbackOut:
     return stored
 
 
-@app.get("/feedback", dependencies=[Depends(verify_token)])
+@app.get("/reports", dependencies=[Depends(verify_token)])
 def list_feedback() -> list[FeedbackOut]:
     if not FEEDBACK_FILE.exists():
         return []
@@ -387,7 +387,7 @@ def list_feedback() -> list[FeedbackOut]:
     return final
 
 
-@app.delete("/feedback/{feedback_id}", dependencies=[Depends(verify_token)])
+@app.delete("/reports/{feedback_id}", dependencies=[Depends(verify_token)])
 def delete_feedback(feedback_id: str):
     deleted = {
         "id": feedback_id,

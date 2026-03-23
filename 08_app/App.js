@@ -18,7 +18,7 @@ import NetInfo from "@react-native-community/netinfo";
 var DateTimePicker = Platform.OS === "web" ? null : require("@react-native-community/datetimepicker").default;
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE || "https://mnemo.axex.is";
-const APP_VERSION = "0.2.2";
+const APP_VERSION = "0.2.3";
 
 const C = {
   bg: "#1a1a2e",
@@ -172,7 +172,7 @@ function AppContent() {
       if (i >= items.length) { if (changed) saveQueueItems(items); return; }
       var item = items[i];
       if (item.status !== "pending" && item.status !== "failed") { process(i + 1); return; }
-      var endpoint = item.kind === "diary" ? "/diary" : item.kind === "feedback" ? "/feedback" : "/events";
+      var endpoint = item.kind === "diary" ? "/diary" : item.kind === "feedback" ? "/reports" : "/events";
       fetch(API_BASE + endpoint, { method: "POST", headers: authHeaders(), body: JSON.stringify(item.payload) })
         .then(function (res) {
           if (!res.ok) throw new Error("HTTP " + res.status);
@@ -810,7 +810,7 @@ function AppContent() {
               <TouchableOpacity style={st.btnSubmit} onPress={function () {
                 if (!feedbackText.trim()) { showToastMsg("Please describe your feedback", "error"); return; }
                 setScreen("submitting");
-                fetch(API_BASE + "/feedback", {
+                fetch(API_BASE + "/reports", {
                   method: "POST",
                   headers: authHeaders(),
                   body: JSON.stringify({ type: feedbackType, text: feedbackText.trim() }),
@@ -828,7 +828,7 @@ function AppContent() {
             </View>
             <TouchableOpacity style={{ marginTop: 20 }} onPress={function () {
               if (feedbackShowList) { setFeedbackShowList(false); return; }
-              fetch(API_BASE + "/feedback", { headers: authHeaders() })
+              fetch(API_BASE + "/reports", { headers: authHeaders() })
                 .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
                 .then(function (data) { setFeedbackList(data); setFeedbackShowList(true); })
                 .catch(function (err) { showToastMsg(err.message || "Load failed", "error"); });
@@ -840,7 +840,7 @@ function AppContent() {
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                     <Text style={{ color: C.muted, fontSize: 12 }}>{fb.created_at.slice(0, 10)}</Text>
                     <TouchableOpacity onPress={function () {
-                      fetch(API_BASE + "/feedback/" + fb.id, { method: "DELETE", headers: authHeaders() })
+                      fetch(API_BASE + "/reports/" + fb.id, { method: "DELETE", headers: authHeaders() })
                         .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); setFeedbackList(feedbackList.filter(function (f) { return f.id !== fb.id; })); showToastMsg("Deleted", "success"); })
                         .catch(function (err) { showToastMsg(err.message, "error"); });
                     }}><Text style={{ color: C.error, fontSize: 12 }}>Delete</Text></TouchableOpacity>

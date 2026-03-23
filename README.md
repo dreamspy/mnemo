@@ -74,7 +74,7 @@ Code and data are strictly separated. The event file never lives inside the repo
 - **Reverse proxy:** Nginx
 - **CDN/DNS:** Cloudflare
 - **Server:** AWS EC2 (Ubuntu 22.04)
-- **Frontend:** Web-first PWA
+- **Frontend:** Expo (React Native) — iOS, Android, and web from a single codebase
 - **Sync:** Syncthing (server → Mac)
 
 ### systemd → Uvicorn
@@ -105,7 +105,6 @@ Phase 1 uses simple bearer token authentication. This is intentionally minimal �
 2. **Phase 2:** Server-side daily/weekly summaries generated from the event stream
 3. **Phase 3:** Pattern detection and trend alerts
 4. **Phase 4:** Conversational interface over the event history
-5. **Phase 5:** Flutter mobile client
 
 ## Database Migration Path
 
@@ -116,9 +115,9 @@ HuXa is designed so that migrating from JSONL to PostgreSQL is straightforward w
 ```
 01_docs/          → Architecture, decisions, deployment docs
 02_backend/       → FastAPI application
-03_frontend/      → PWA frontend
 04_infrastructure/→ systemd, nginx, AWS, Cloudflare configs
-05_scripts/       → Analysis and export scripts
+05_scripts/       → Dev server, analysis, and export scripts
 06_config/        → Configuration templates
 07_examples/      → Example event data
+08_app/           → Expo app (iOS, Android, web)
 ```

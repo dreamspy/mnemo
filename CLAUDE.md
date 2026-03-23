@@ -50,6 +50,9 @@
 - Test changes against the actual JSONL append workflow.
 - **Keep ALL docs in sync.** When implementing a feature, fixing a bug, or making any meaningful change, update all relevant files in the same commit: READMEs (`README.md`, `02_backend/README.md`, `03_frontend/README.md`, `05_scripts/README.md`), docs in `01_docs/`, `ROADMAP.md` (tick off completed items), and `CLAUDE.md` if architecture or rules change. If you add, remove, or change a script, endpoint, feature, or config option, every affected doc must reflect it.
 - **Bump version on every commit.** Version lives in `03_frontend/public/app.js` and `03_frontend/public/sw.js` (both `APP_VERSION`). Before committing, ask the user which digit to increment: major (1st), minor (2nd), or patch (3rd). Keep both files in sync.
+- **Include version in commit messages.** When the version is bumped, include it in the commit subject, e.g. `"Add feature X (v0.3.0)"`. If no version bump, don't add it.
+- **Expo is the primary frontend.** All UI/frontend work goes in `08_app/` (Expo/React Native). The `03_frontend/` PWA is deprecated and will be removed. Do not invest time in PWA changes.
+- **Archive completed roadmap phases.** When all items in a `ROADMAP.md` phase are done, move it to the Archive section at the bottom (below the `---` separator).
 
 ## File Paths
 

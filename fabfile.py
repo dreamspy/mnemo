@@ -14,7 +14,14 @@ def _conn():
 
 @task
 def deploy(c):
-    """Push to main, pull on server, restart huxa."""
+    """Build web, push to main, pull on server, restart huxa."""
+    app_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "08_app")
+    subprocess.run(["npx", "expo", "export", "--platform", "web"], cwd=app_dir, check=True)
+    subprocess.run(["git", "add", os.path.join(app_dir, "dist")], check=True)
+    # Commit dist if there are changes
+    result = subprocess.run(["git", "diff", "--cached", "--quiet", "--", os.path.join(app_dir, "dist")])
+    if result.returncode != 0:
+        subprocess.run(["git", "commit", "-m", "Build web dist"], check=True)
     subprocess.run(["git", "push", "origin", "main"], check=True)
     with _conn() as srv:
         srv.run("cd /opt/huxa && sudo git pull origin main")

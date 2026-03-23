@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,10 +10,12 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Alert,
+  AppState,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import NetInfo from "@react-native-community/netinfo";
+var DateTimePicker = Platform.OS === "web" ? null : require("@react-native-community/datetimepicker").default;
 
 const API_BASE = "https://mnemo.axex.is";
 const APP_VERSION = "0.2.1";
@@ -29,6 +31,28 @@ const C = {
   error: "#ff6b6b",
   radius: 10,
 };
+
+function WebDateInput(props) {
+  var val = props.mode === "time"
+    ? props.value.toTimeString().slice(0, 5)
+    : props.value.toISOString().slice(0, 10);
+  return React.createElement("input", {
+    type: props.mode === "time" ? "time" : "date",
+    value: val,
+    onChange: function (e) {
+      var d = new Date(props.value);
+      if (props.mode === "time") {
+        var parts = e.target.value.split(":");
+        d.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10));
+      } else {
+        var dp = e.target.value.split("-");
+        d = new Date(parseInt(dp[0], 10), parseInt(dp[1], 10) - 1, parseInt(dp[2], 10), props.value.getHours(), props.value.getMinutes());
+      }
+      if (props.onChange) props.onChange(null, d);
+    },
+    style: { backgroundColor: C.surface, color: C.text, border: "1px solid " + C.muted, borderRadius: 8, padding: 8, fontSize: 16 },
+  });
+}
 
 const DIARY_QUESTIONS = [
   { key: "sleep", label: "Sleep Quality", question: "How was your sleep quality last night?", type: "scale", min: 1, max: 10 },
@@ -153,6 +177,26 @@ function AppContent() {
     };
     process(0);
   }
+
+  var processQueueRef = useRef(processQueueFn);
+  processQueueRef.current = processQueueFn;
+  var queueRef = useRef(queue);
+  queueRef.current = queue;
+
+  useEffect(function () {
+    var unsubNetInfo = NetInfo.addEventListener(function (state) {
+      if (state.isConnected && queueRef.current.length > 0) {
+        processQueueRef.current();
+      }
+    });
+    var onAppState = function (nextState) {
+      if (nextState === "active" && queueRef.current.length > 0) {
+        processQueueRef.current();
+      }
+    };
+    var sub = AppState.addEventListener("change", onAppState);
+    return function () { unsubNetInfo(); sub.remove(); };
+  }, []);
 
   function submitEvent(nextType) {
     var text = composeText.trim();
@@ -317,10 +361,61 @@ function AppContent() {
           <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={function () { if (!token) setScreen("token"); else { setDiaryDate(todayStr()); setScreen("diary-date"); } }}><Text style={st.btnText}>Diary</Text></TouchableOpacity>
           <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={openHistory}><Text style={st.btnText}>History</Text></TouchableOpacity>
           <TouchableOpacity style={[st.btn, st.btnSecondary]} onPress={function () { if (!token) setScreen("token"); else { setQueryText(""); setQueryAnswer(""); setScreen("query"); } }}><Text style={st.btnText}>Ask HuXa</Text></TouchableOpacity>
-          {queue.length > 0 && <TouchableOpacity style={[st.btn, { backgroundColor: C.input }]} onPress={function () { processQueueFn(); showToastMsg("Syncing...", "success"); }}><Text style={st.btnText}>{queue.length} pending</Text></TouchableOpacity>}
+          {queue.length > 0 && <TouchableOpacity style={[st.btn, { backgroundColor: C.input }]} onPress={function () { setScreen("queue"); }}><Text style={st.btnText}>{queue.length} pending</Text></TouchableOpacity>}
         </View>
         <TouchableOpacity style={st.settingsBtn} onPress={function () { setTokenInput(token); setScreen("token"); }}><Text style={st.settingsBtnText}>Settings</Text></TouchableOpacity>
         <Text style={st.version}>v{APP_VERSION}</Text>
+        {renderToast()}
+      </SafeAreaView>
+    );
+  }
+
+  // --- QUEUE ---
+  if (screen === "queue") {
+    var removeFromQueue = function (id) {
+      Alert.alert("Remove", "Remove this item from the queue?", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Remove", style: "destructive", onPress: function () {
+          saveQueueItems(queue.filter(function (q) { return q.id !== id; }));
+        }}
+      ]);
+    };
+    return (
+      <SafeAreaView style={st.container}>
+        <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
+        <Text style={st.label}>Pending Events ({queue.length})</Text>
+        <ScrollView style={st.historyScroll} contentContainerStyle={st.historyScrollContent}>
+          {queue.map(function (item) {
+            var d = new Date(item.created_at);
+            var time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            var date = d.toLocaleDateString();
+            var label = item.kind === "diary" ? "Diary" : (item.payload && item.payload.type ? item.payload.type : "Event");
+            var detail = item.kind === "diary"
+              ? (item.payload && item.payload.date ? item.payload.date : "")
+              : (item.payload && item.payload.text ? item.payload.text : "");
+            return (
+              <View key={item.id} style={st.eventCard}>
+                <View style={st.eventHeader}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <View style={st.badge}><Text style={st.badgeText}>{label}</Text></View>
+                    {item.status === "failed" && <View style={[st.badge, { backgroundColor: C.error }]}><Text style={st.badgeText}>Failed</Text></View>}
+                  </View>
+                  <Text style={st.eventTime}>{date} {time}</Text>
+                </View>
+                <Text style={st.eventText} numberOfLines={2}>{detail}</Text>
+                {item.error && <Text style={{ color: C.error, fontSize: 12, marginTop: 4 }}>{item.error}</Text>}
+                <TouchableOpacity style={st.editBtn} onPress={function () { removeFromQueue(item.id); }}>
+                  <Text style={st.editBtnText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })}
+          {queue.length === 0 && <Text style={st.emptyText}>Queue is empty</Text>}
+        </ScrollView>
+        <View style={[st.row, { marginBottom: 20 }]}>
+          <TouchableOpacity style={st.btnBack} onPress={function () { setScreen("idle"); }}><Text style={st.btnBackText}>Back</Text></TouchableOpacity>
+          <TouchableOpacity style={st.btnSubmit} onPress={function () { processQueueFn(); showToastMsg("Syncing...", "success"); }}><Text style={st.btnSubmitText}>Sync All</Text></TouchableOpacity>
+        </View>
         {renderToast()}
       </SafeAreaView>
     );
@@ -367,8 +462,8 @@ function AppContent() {
             <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
             <Text style={st.label}>{editingEventId ? "Edit " : "New "}{selectedType}</Text>
             <View style={st.datePickerRow}>
-              <DateTimePicker value={composeDate} mode="date" display="default" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />
-              <DateTimePicker value={composeDate} mode="time" display="default" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />
+              {Platform.OS === "web" ? <WebDateInput value={composeDate} mode="date" onChange={function (e, date) { if (date) setComposeDate(date); }} /> : <DateTimePicker value={composeDate} mode="date" display="default" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />}
+              {Platform.OS === "web" ? <WebDateInput value={composeDate} mode="time" onChange={function (e, date) { if (date) setComposeDate(date); }} /> : <DateTimePicker value={composeDate} mode="time" display="default" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />}
             </View>
             <TextInput style={[st.input, st.textArea]} placeholder="What happened?" placeholderTextColor={C.muted} value={composeText} onChangeText={setComposeText} multiline numberOfLines={3} />
             <View style={st.row}>
@@ -433,7 +528,7 @@ function AppContent() {
         <TouchableOpacity onPress={function () { setScreen("idle"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
         <Text style={st.label}>History</Text>
         <View style={st.datePickerRow}>
-          <DateTimePicker value={new Date(historyDate + "T12:00:00")} mode="date" display="default" themeVariant="dark" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} />
+          {Platform.OS === "web" ? <WebDateInput value={new Date(historyDate + "T12:00:00")} mode="date" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} /> : <DateTimePicker value={new Date(historyDate + "T12:00:00")} mode="date" display="default" themeVariant="dark" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} />}
         </View>
         <View style={st.historyTabs}>
           <TouchableOpacity style={[st.historyTab, historyTab === "events" && st.historyTabActive]} onPress={function () { setHistoryTab("events"); doFetchHistory("events", historyDate); }}><Text style={[st.historyTabText, historyTab === "events" && st.historyTabTextActive]}>Events</Text></TouchableOpacity>
@@ -519,11 +614,17 @@ function AppContent() {
             </View>
           ) : (
             <View style={st.row}>
-              <TouchableOpacity style={st.btnBack} onPress={function () { setScreen("diary-bulk-scales"); }}><Text style={st.btnBackText}>Quick Entry</Text></TouchableOpacity>
+              <TouchableOpacity style={st.btnBack} onPress={function () {
+                NetInfo.fetch().then(function (state) {
+                  if (state.isConnected) { setScreen("diary-bulk-scales"); }
+                  else { showToastMsg("Quick Entry needs internet for AI parsing", "error"); }
+                });
+              }}><Text style={st.btnBackText}>Quick Entry</Text></TouchableOpacity>
               <TouchableOpacity style={st.btnSubmit} onPress={function () { setDiaryStep(0); setScreen("diary-step"); }}><Text style={st.btnSubmitText}>Continue</Text></TouchableOpacity>
             </View>
           )}
         </ScrollView>
+        {renderToast()}
       </SafeAreaView>
     );
   }

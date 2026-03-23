@@ -58,3 +58,6 @@ htmlcov/
 # Build artifacts
 *.so
 *.dylib
+
+# Allow Expo web build (served by nginx)
+!08_app/dist/

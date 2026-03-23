@@ -41,7 +41,7 @@ This means:
 
 ## Offline Readiness
 
-The file-based design means the data is always available locally on any machine with a copy. In phase 1, the Mac receives the file via Syncthing. Future phases may introduce a Flutter client with local event caching and batch sync.
+The file-based design means the data is always available locally on any machine with a copy. The Mac receives the file via Syncthing. The Expo app queues events locally when offline and syncs them when connectivity is restored.
 
 ## Sync to Mac
 
@@ -74,20 +74,9 @@ This is the standard way to run services on Linux and costs zero additional comp
 
 HuXa is designed to grow:
 
-1. **v1:** JSONL + FastAPI + PWA + Syncthing sync
+1. **v1:** JSONL + FastAPI + Expo (iOS/Android/web) + Syncthing sync
 2. **v2:** Server-side analysis scripts (daily summaries, pattern detection)
 3. **v3:** AI augmentation layer (LLM-powered insights from the event stream)
 4. **v4:** PostgreSQL migration (when query patterns demand it)
-5. **v5:** Flutter mobile client with offline-first architecture
 
 Each phase builds on the previous without breaking the core append-only contract.
-
-## Future Flutter Client
-
-A Flutter client would:
-- Cache events locally on the device
-- Generate `client_timestamp` on the phone
-- Batch-sync to the server when online
-- Support voice input via Whisper (on-device or server-side)
-
-The event schema and API are designed to support this without modification. The `client_timestamp` / `received_at` split already accounts for delayed event delivery.

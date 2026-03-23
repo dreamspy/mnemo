@@ -4,10 +4,14 @@
 
 HuXa runs on an AWS EC2 instance (Ubuntu 22.04). Code is deployed to `/opt/huxa/`, data lives in `/var/lib/huxa/`, and the FastAPI application is managed by systemd behind an Nginx reverse proxy with Cloudflare in front.
 
+The frontend is an Expo app (`08_app/`) that serves iOS, Android, and web from a single codebase. The web build (`08_app/dist/`) is served by Nginx as static files.
+
 ## Server Layout
 
 ```
 /opt/huxa/              → Application code (git clone target)
+  08_app/dist/          → Expo web build (served by Nginx)
+  02_backend/           → FastAPI backend
 /var/lib/huxa/
     events.jsonl         → Raw event stream
     diary.jsonl          → Structured diary entries
@@ -15,6 +19,39 @@ HuXa runs on an AWS EC2 instance (Ubuntu 22.04). Code is deployed to `/opt/huxa/
 /var/log/huxa/          → Application logs
 /etc/huxa/
     config.json          → Runtime configuration
+```
+
+## Local Development
+
+### Prerequisites
+
+- Node.js and npm
+- Python 3 with venv
+- Expo Go app on iPhone (for mobile testing)
+- Xcode (for iOS simulator)
+
+### Dev Server
+
+The dev script starts both the backend and Expo from a single command:
+
+```bash
+./05_scripts/dev_server.sh          # Backend + Expo (iOS/Android)
+./05_scripts/dev_server.sh --web    # Backend + Expo web (browser)
+```
+
+This:
+- Runs the backend on `http://localhost:8000` with isolated dev data in `/tmp/huxa_dev/`
+- Runs Expo in the foreground (interactive — press `i` for iOS simulator, `w` for web)
+- Auto-configures the app to use the local backend via `EXPO_PUBLIC_API_BASE`
+- Sets auth token to `dev-token` via `EXPO_PUBLIC_AUTH_TOKEN`
+
+API keys (e.g. `OPENAI_API_KEY`) are loaded from `02_backend/.env`.
+
+### Building for Web
+
+```bash
+cd 08_app
+npm run build:web    # outputs to 08_app/dist/
 ```
 
 ## Code Deployment
@@ -27,13 +64,19 @@ Deployment is automated with [Fabric](https://www.fabfile.org/) via `fabfile.py`
 fab deploy
 ```
 
-This pushes to `origin/main`, pulls on the server, and restarts the service.
+This:
+1. Builds the Expo web frontend (`08_app/dist/`)
+2. Commits the build if changed
+3. Pushes to `origin/main`
+4. Pulls on the server
+5. Copies nginx config and reloads
+6. Restarts the huxa service
 
 ### Available Commands
 
 | Command | Description |
 |---|---|
-| `fab deploy` | Push, pull on server, restart huxa |
+| `fab deploy` | Build web, push, pull, sync nginx, restart |
 | `fab status` | Show huxa service status |
 | `fab logs` | Tail last 50 log lines (`--lines=N` for more) |
 | `fab restart` | Restart the service |
@@ -45,11 +88,12 @@ If needed, SSH in and run:
 ```bash
 cd /opt/huxa
 git pull origin main
-pip install -r 02_backend/requirements.txt
+sudo cp 04_infrastructure/nginx/huxa.conf /etc/nginx/sites-available/huxa
+sudo nginx -t && sudo systemctl reload nginx
 sudo systemctl restart huxa
 ```
 
-The repository contains application code only. Data, logs, and configuration are external to the repo.
+The repository contains application code and the web build. Data, logs, and configuration are external to the repo.
 
 ## systemd Service
 
@@ -93,24 +137,28 @@ journalctl -u huxa -f          # tail logs
 
 ## Nginx Configuration
 
-Nginx proxies external HTTPS traffic to Uvicorn:
+Nginx serves the Expo web build as static files and proxies API requests to Uvicorn:
 
 ```nginx
 server {
-    listen 80;
+    listen 443 ssl;
     server_name mnemo.axex.is;
 
+    root /opt/huxa/08_app/dist;
+    index index.html;
+
     location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        try_files $uri $uri/ /index.html;
     }
+
+    location /events { proxy_pass http://127.0.0.1:8000; ... }
+    location /diary  { proxy_pass http://127.0.0.1:8000; ... }
+    location /query  { proxy_pass http://127.0.0.1:8000; ... }
+    location /health { proxy_pass http://127.0.0.1:8000; ... }
 }
 ```
 
-TLS is terminated at Cloudflare (Full mode) or locally with certbot depending on configuration.
+Full config in `04_infrastructure/nginx/huxa.conf`.
 
 ## Cloudflare Integration
 

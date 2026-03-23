@@ -48,10 +48,10 @@
 - Do not add database support.
 - Do not add complex auth flows — phase 1 is bearer token.
 - Test changes against the actual JSONL append workflow.
-- **Keep ALL docs in sync.** When implementing a feature, fixing a bug, or making any meaningful change, update all relevant files in the same commit: READMEs (`README.md`, `02_backend/README.md`, `03_frontend/README.md`, `05_scripts/README.md`), docs in `01_docs/`, `ROADMAP.md` (tick off completed items), and `CLAUDE.md` if architecture or rules change. If you add, remove, or change a script, endpoint, feature, or config option, every affected doc must reflect it.
-- **Bump version on every commit.** Version lives in `03_frontend/public/app.js` and `03_frontend/public/sw.js` (both `APP_VERSION`). Before committing, ask the user which digit to increment: major (1st), minor (2nd), or patch (3rd). Keep both files in sync.
+- **Keep ALL docs in sync.** When implementing a feature, fixing a bug, or making any meaningful change, update all relevant files in the same commit: READMEs (`README.md`, `02_backend/README.md`, `05_scripts/README.md`), docs in `01_docs/`, `ROADMAP.md` (tick off completed items), and `CLAUDE.md` if architecture or rules change. If you add, remove, or change a script, endpoint, feature, or config option, every affected doc must reflect it.
+- **Bump version on every commit.** Version lives in `08_app/App.js` (`APP_VERSION`). Before committing, ask the user which digit to increment: major (1st), minor (2nd), or patch (3rd).
 - **Include version in commit messages.** When the version is bumped, include it in the commit subject, e.g. `"Add feature X (v0.3.0)"`. If no version bump, don't add it.
-- **Expo is the primary frontend.** All UI/frontend work goes in `08_app/` (Expo/React Native). The `03_frontend/` PWA is deprecated and will be removed. Do not invest time in PWA changes.
+- **Expo is the sole frontend.** All UI/frontend work goes in `08_app/` (Expo/React Native). Serves iOS, Android, and web from a single codebase.
 - **Archive completed roadmap phases.** When all items in a `ROADMAP.md` phase are done, move it to the Archive section at the bottom (below the `---` separator).
 
 ## File Paths
@@ -63,5 +63,9 @@
 | `02_backend/app/models/` | Pydantic models |
 | `04_infrastructure/systemd/huxa.service` | systemd unit file |
 | `04_infrastructure/nginx/huxa.conf` | Nginx site config |
+| `05_scripts/dev_server.sh` | Local dev server (backend + Expo) |
 | `06_config/config.example.json` | Configuration template |
 | `07_examples/events.example.jsonl` | Example event data |
+| `08_app/App.js` | Expo app (main source file) |
+| `08_app/dist/` | Expo web build (served by Nginx in production) |
+| `fabfile.py` | Fabric deploy commands |

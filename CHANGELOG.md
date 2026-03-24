@@ -2,6 +2,13 @@
 
 All notable changes to HuXa are documented here.
 
+## v0.2.11 — 2026-03-24
+
+- Fix delete not working on web — `Alert.alert` replaced with cross-platform `confirmAction`
+- Remove unused `localhost:3000` from CORS origins
+- Add Enter key submit on token input
+- Change version bump and changelog rules to deploy-time only
+
 ## v0.2.10 — 2026-03-24
 
 - Add `CHANGELOG.md` with full version history extracted from git

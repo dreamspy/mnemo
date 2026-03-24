@@ -2,6 +2,12 @@
 
 All notable changes to HuXa are documented here.
 
+## v0.2.10 — 2026-03-24
+
+- Add `CHANGELOG.md` with full version history extracted from git
+- Add changelog and version bump rules to `CLAUDE.md`
+- Change rules: version bump and changelog update happen before deploy, not every commit
+
 ## v0.2.9 — 2026-03-24
 
 - Add `CHANGELOG.md` with full version history extracted from git

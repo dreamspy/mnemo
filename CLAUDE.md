@@ -52,7 +52,7 @@
 - **Bump version before each deploy.** Version lives in `08_app/App.js` (`APP_VERSION`). Before deploying (not every commit), ask the user which digit to increment: major (1st), minor (2nd), or patch (3rd). Multiple commits can share a version.
 - **Include version in commit messages.** When the version is bumped, include it in the commit subject, e.g. `"Add feature X (v0.3.0)"`. If no version bump, don't add it.
 - **Expo is the sole frontend.** All UI/frontend work goes in `08_app/` (Expo/React Native). Serves iOS, Android, and web from a single codebase.
-- **Update CHANGELOG.md on every commit.** Add a bullet under the current version section describing what changed. When the version is bumped, create a new section header with the version and date.
+- **Update CHANGELOG.md before each deploy.** Create a new section header with the version and date, and add bullets describing all changes since the last deploy.
 - **Archive completed roadmap phases.** When all items in a `ROADMAP.md` phase are done, move it to the Archive section at the bottom (below the `---` separator).
 
 ## File Paths

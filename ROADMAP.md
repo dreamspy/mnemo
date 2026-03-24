@@ -1,10 +1,5 @@
 # HuXa Build Roadmap
 
-## Backlog
-
-- [ ] Voice input via Whisper (on-device or server-side speech-to-text)
-- [ ] New app icon and branding
-
 ## Phase 10 — Standalone App on iPhone
 
 - [ ] Get Apple Developer account ($99/year) — waiting for confirmation
@@ -40,6 +35,12 @@ The current `/query` endpoint sends the entire event log to GPT. At ~10 events/d
 - [ ] Store embeddings (vector file or lightweight vector DB)
 - [ ] Query by similarity: find relevant events, send only those to GPT
 - [ ] Fallback: add date range filter to `/query` endpoint as interim solution
+
+## Phase 16 — Voice Input (Whisper)
+
+- [ ] Add voice-to-text for logging and diary entry
+- [ ] Evaluate on-device vs server-side transcription
+- [ ] Integrate with compose and diary text inputs
 
 ---
 

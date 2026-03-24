@@ -2,6 +2,11 @@
 
 All notable changes to HuXa are documented here.
 
+## v0.2.12 — 2026-03-24
+
+- Add back/forward date arrows on compose and history screens
+- Fix native spacing on date arrow controls
+
 ## v0.2.11 — 2026-03-24
 
 - Fix delete not working on web — `Alert.alert` replaced with cross-platform `confirmAction`

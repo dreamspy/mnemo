@@ -361,7 +361,11 @@ function AppContent() {
         );
       })(i);
     }
-    return <View style={st.scaleGrid}>{buttons}</View>;
+    var rows = [];
+    for (var r = 0; r < buttons.length; r += 5) {
+      rows.push(<View key={r} style={st.scaleRow}>{buttons.slice(r, r + 5)}</View>);
+    }
+    return <View style={st.scaleGrid}>{rows}</View>;
   }
 
   function renderToast() {
@@ -662,13 +666,20 @@ function AppContent() {
               <View key={q.key} style={{ width: "100%", marginBottom: 16 }}>
                 <Text style={st.labelSmall}>{q.label}</Text>
                 <View style={st.scaleGrid}>
-                  {Array.from({ length: q.max - q.min + 1 }, function (_, i) { return i + q.min; }).map(function (val) {
-                    return (
-                      <TouchableOpacity key={val} style={[st.scaleBtn, current === val && st.scaleBtnSelected]} onPress={function () { setDiaryAnswer(q.key, val); }}>
-                        <Text style={[st.scaleBtnText, current === val && st.scaleBtnTextSelected]}>{val}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
+                  {(function () {
+                    var vals = Array.from({ length: q.max - q.min + 1 }, function (_, i) { return i + q.min; });
+                    var rows = [];
+                    for (var r = 0; r < vals.length; r += 5) {
+                      rows.push(<View key={r} style={st.scaleRow}>{vals.slice(r, r + 5).map(function (val) {
+                        return (
+                          <TouchableOpacity key={val} style={[st.scaleBtn, current === val && st.scaleBtnSelected]} onPress={function () { setDiaryAnswer(q.key, val); }}>
+                            <Text style={[st.scaleBtnText, current === val && st.scaleBtnTextSelected]}>{val}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}</View>);
+                    }
+                    return rows;
+                  })()}
                 </View>
               </View>
             );
@@ -891,7 +902,7 @@ var st = StyleSheet.create({
   halfRow: { flexDirection: "row", width: "50%", marginTop: 12 },
   datePickerRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginBottom: 16 },
   dateArrowLeft: { color: C.muted, fontSize: 18, marginRight: Platform.OS === "web" ? 4 : -4 },
-  dateArrowRight: { color: C.muted, fontSize: 18, marginLeft: Platform.OS === "web" ? 4 : 6 },
+  dateArrowRight: { color: C.muted, fontSize: 18, marginLeft: Platform.OS === "web" ? 4 : 6, marginRight: Platform.OS === "web" ? 18 : 0 },
   input: { width: "100%", backgroundColor: C.input, borderRadius: 25, padding: 14, color: C.text, fontSize: 16, marginBottom: 12, outlineOffset: -2 },
   inputText: { color: C.text, fontSize: 16 },
   textArea: { minHeight: 80, textAlignVertical: "top", borderRadius: 12 },
@@ -919,8 +930,9 @@ var st = StyleSheet.create({
   summaryText: { color: C.text, fontSize: 14, lineHeight: 20 },
   progressText: { color: C.muted, fontSize: 12, marginBottom: 8 },
   question: { color: C.text, fontSize: 16, marginBottom: 16, textAlign: "center" },
-  scaleGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 8, marginBottom: 16, width: "100%" },
-  scaleBtn: { backgroundColor: C.surface, borderRadius: 8, width: "18%", height: 50, alignItems: "center", justifyContent: "center" },
+  scaleGrid: { marginBottom: 16, width: "100%", gap: 8 },
+  scaleRow: { flexDirection: "row", justifyContent: "flex-start", gap: 8, width: "100%" },
+  scaleBtn: { backgroundColor: C.surface, borderRadius: 8, flex: 1, height: 50, alignItems: "center", justifyContent: "center" },
   scaleBtnSelected: { backgroundColor: C.accent },
   scaleBtnText: { color: C.text, fontSize: 16, fontWeight: "600" },
   scaleBtnTextSelected: { color: "#fff" },

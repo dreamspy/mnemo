@@ -1,6 +1,6 @@
 # HuXa Build Roadmap
 
-## Phase 10 — Standalone App on iPhone
+## Standalone App on iPhone
 
 - [ ] Get Apple Developer account ($99/year) — waiting for confirmation
 - [ ] Install EAS CLI (`npm install -g eas-cli`)
@@ -10,11 +10,11 @@
 - [ ] Distribute via TestFlight for personal use
 - [ ] (Optional) Submit to App Store for public distribution
 
-## Phase 11 — Cloudflare App Lockdown
+## Cloudflare App Lockdown
 
 - [ ] Set up Cloudflare Access or app lockdown (replace IP lockdown)
 
-## Phase 13 — Multi-User (Google OAuth)
+## Multi-User (Google OAuth)
 
 - [ ] Add Google OAuth login (backend endpoints for auth flow, JWT sessions)
 - [ ] Per-user JSONL storage (`/var/lib/huxa/users/{email}/events.jsonl` and `diary.jsonl`)
@@ -22,12 +22,12 @@
 - [ ] Replace bearer token with OAuth session
 - [ ] Remove token UI from web frontend (settings gear, token dialog)
 
-## Phase 14 — Dark / Light Mode
+## Dark / Light Mode
 
 - [ ] Add theme toggle to app and web frontend
 - [ ] Persist preference in AsyncStorage / localStorage
 
-## Phase 15 — Smart Query (Embeddings / RAG)
+## Smart Query (Embeddings / RAG)
 
 The current `/query` endpoint sends the entire event log to GPT. At ~10 events/day, the log will exceed GPT-4o-mini's 128K token context window within 6-12 months. An embeddings-based approach finds only the relevant events for each query, making it scale to years of data without hitting token limits.
 
@@ -36,14 +36,14 @@ The current `/query` endpoint sends the entire event log to GPT. At ~10 events/d
 - [ ] Query by similarity: find relevant events, send only those to GPT
 - [ ] Fallback: add date range filter to `/query` endpoint as interim solution
 
-## Phase 16 — Landing Page
+## Landing Page
 
 - [ ] Public welcome page at huxa.is for unauthenticated visitors
 - [ ] App description, screenshots, and feature overview
 - [ ] Links to App Store / TestFlight
 - [ ] Documentation / getting started guide
 
-## Phase 17 — Voice Input (Whisper)
+## Voice Input (Whisper)
 
 - [ ] Add voice-to-text for logging and diary entry
 - [ ] Evaluate on-device vs server-side transcription

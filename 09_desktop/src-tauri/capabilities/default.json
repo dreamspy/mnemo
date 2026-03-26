@@ -1,0 +1,13 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for HuXa desktop app",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:window:allow-set-title"
+  ],
+  "remote": {
+    "urls": ["https://huxa.is/*"]
+  }
+}

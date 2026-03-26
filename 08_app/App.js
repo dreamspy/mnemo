@@ -891,7 +891,7 @@ var st = StyleSheet.create({
   btnBack: { borderRadius: 25, borderWidth: 1, borderColor: C.muted, paddingVertical: 14, paddingHorizontal: 24, alignItems: "center", flex: 1 },
   btnBackText: { color: C.muted, fontSize: 14, fontWeight: "600", textTransform: "uppercase" },
   row: { flexDirection: "row", width: "100%", gap: 12, marginTop: 12 },
-  halfRow: { flexDirection: "row", width: "50%", marginTop: 12 },
+  halfRow: { flexDirection: "row", width: "50%", marginTop: 12, marginBottom: 16 },
   datePickerRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginBottom: 16 },
   dateArrowLeft: { color: C.muted, fontSize: 18, marginRight: Platform.OS === "web" ? 4 : -4 },
   dateArrowRight: { color: C.muted, fontSize: 18, marginLeft: Platform.OS === "web" ? 4 : 6, marginRight: Platform.OS === "web" ? 18 : 0 },

@@ -22,7 +22,7 @@ import uuid
 app = FastAPI(title="HuXa", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://huxa.is", "http://localhost:8081"],
+    allow_origins=["https://huxa.is", "http://localhost:8081", "tauri://localhost"],
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )

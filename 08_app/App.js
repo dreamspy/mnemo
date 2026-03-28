@@ -16,10 +16,11 @@ import {
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
+import * as SystemUI from "expo-system-ui";
 var DateTimePicker = Platform.OS === "web" ? null : require("@react-native-community/datetimepicker").default;
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE || "https://huxa.is";
-const APP_VERSION = "0.2.14";
+const APP_VERSION = "0.2.15";
 
 const COLOR_PROFILES = {
   dark: {
@@ -260,6 +261,10 @@ function AppContent() {
     AsyncStorage.getItem("huxa_color_profile").then(function (p) { if (p && COLOR_PROFILES[p]) setColorProfile(p); });
     loadQueue();
   }, []);
+
+  useEffect(function () {
+    SystemUI.setBackgroundColorAsync(C.bg);
+  }, [C.bg]);
 
   function showToastMsg(msg, type) {
     setToast({ msg: msg, type: type });

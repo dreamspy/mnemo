@@ -2,6 +2,10 @@
 
 All notable changes to HuXa are documented here.
 
+## v0.2.15 — 2026-03-28
+
+- Fix dark bar below safe area in light mode by setting native root background via expo-system-ui
+
 ## v0.2.14 — 2026-03-28
 
 - Add color profiles: Dark (icon-inspired), Light, and Auto (follows OS dark/light mode)

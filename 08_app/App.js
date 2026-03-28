@@ -263,13 +263,7 @@ function AppContent() {
   }, []);
 
   useEffect(function () {
-    if (Platform.OS === "web") {
-      document.body.style.backgroundColor = C.bg;
-      var meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", C.bg);
-    } else {
-      SystemUI.setBackgroundColorAsync(C.bg);
-    }
+    SystemUI.setBackgroundColorAsync(C.bg);
   }, [C.bg]);
 
   function showToastMsg(msg, type) {

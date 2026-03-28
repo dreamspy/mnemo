@@ -2,6 +2,13 @@
 
 All notable changes to HuXa are documented here.
 
+## v0.2.14 — 2026-03-28
+
+- Add color profiles: Dark (icon-inspired), Light, and Auto (follows OS dark/light mode)
+- Color profile selector in Settings screen, persisted across restarts
+- Auto mode uses `useColorScheme` to reactively follow macOS/iOS appearance
+- Install `expo-system-ui` for proper simulator dark mode support
+
 ## v0.2.13 — 2026-03-24
 
 - Fix diary scale grid to show 5 numbers per row consistently across web and native

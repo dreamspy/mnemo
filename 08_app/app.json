@@ -28,8 +28,8 @@
       "shortName": "HuXa",
       "display": "standalone",
       "statusBarStyle": "black-translucent",
-      "backgroundColor": "#1a1a2e",
-      "themeColor": "#1a1a2e"
+      "backgroundColor": "#f0f4f8",
+      "themeColor": "#f0f4f8"
     },
     "plugins": [
       "@react-native-community/datetimepicker",

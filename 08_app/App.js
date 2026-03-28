@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Alert,
   AppState,
+  useColorScheme,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,20 +21,124 @@ var DateTimePicker = Platform.OS === "web" ? null : require("@react-native-commu
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE || "https://huxa.is";
 const APP_VERSION = "0.2.13";
 
-const C = {
-  bg: "#1a1a2e",
-  surface: "#16213e",
-  input: "#0f3460",
-  text: "#e0e0e0",
-  muted: "#8a8a9a",
-  accent: "#e94560",
-  success: "#4ecdc4",
-  error: "#ff6b6b",
-  radius: 10,
+const COLOR_PROFILES = {
+  dark: {
+    name: "Dark",
+    bg: "#162032",
+    surface: "#1e3050",
+    input: "#2a4570",
+    text: "#e0ecf0",
+    muted: "#7a9ab0",
+    accent: "#e87070",
+    success: "#5ec4d4",
+    error: "#f07070",
+    radius: 10,
+    statusBar: "light-content",
+  },
+  light: {
+    name: "Light",
+    bg: "#f0f4f8",
+    surface: "#ffffff",
+    input: "#dce4ee",
+    text: "#1a2540",
+    muted: "#6b7c93",
+    accent: "#d65060",
+    success: "#3bada4",
+    error: "#d94545",
+    radius: 10,
+    statusBar: "dark-content",
+  },
 };
+const PROFILE_KEYS = ["auto"].concat(Object.keys(COLOR_PROFILES));
+const DEFAULT_PROFILE = "auto";
+
+function resolveProfile(profileKey, osScheme) {
+  if (profileKey === "auto") {
+    return osScheme === "light" ? "light" : "dark";
+  }
+  return profileKey;
+}
+
+function getColors(profileKey, osScheme) {
+  var resolved = resolveProfile(profileKey, osScheme);
+  return COLOR_PROFILES[resolved] || COLOR_PROFILES.dark;
+}
+
+function makeStyles(C) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: C.bg, alignItems: "center", paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0, paddingHorizontal: 20 },
+    scrollContent: { alignItems: "center", paddingBottom: 40, width: "100%" },
+    title: { fontSize: 28, color: C.text, fontWeight: "300", marginTop: 20, marginBottom: 20, letterSpacing: 2 },
+    label: { fontSize: 14, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 15 },
+    labelSmall: { fontSize: 12, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+    idleButtons: { width: "100%", gap: 12 },
+    btn: { backgroundColor: C.accent, borderRadius: 25, paddingVertical: 16, alignItems: "center" },
+    btnSecondary: { backgroundColor: C.surface },
+    btnText: { color: C.text, fontSize: 16, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 },
+    btnSubmit: { backgroundColor: C.accent, borderRadius: 25, paddingVertical: 14, paddingHorizontal: 24, alignItems: "center", flex: 1 },
+    btnSubmitText: { color: C.text, fontSize: 14, fontWeight: "600", textTransform: "uppercase" },
+    btnBack: { borderRadius: 25, borderWidth: 1, borderColor: C.muted, paddingVertical: 14, paddingHorizontal: 24, alignItems: "center", flex: 1 },
+    btnBackText: { color: C.muted, fontSize: 14, fontWeight: "600", textTransform: "uppercase" },
+    row: { flexDirection: "row", width: "100%", gap: 12, marginTop: 12 },
+    halfRow: { flexDirection: "row", width: "50%", marginTop: 12, marginBottom: 16 },
+    datePickerRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginBottom: 16 },
+    dateArrowLeft: { color: C.muted, fontSize: 18, marginRight: Platform.OS === "web" ? 4 : -4 },
+    dateArrowRight: { color: C.muted, fontSize: 18, marginLeft: Platform.OS === "web" ? 4 : 6, marginRight: Platform.OS === "web" ? 18 : 0 },
+    input: { width: "100%", backgroundColor: C.input, borderRadius: 25, padding: 14, color: C.text, fontSize: 16, marginBottom: 12, outlineOffset: -2 },
+    inputText: { color: C.text, fontSize: 16 },
+    textArea: { minHeight: 80, textAlignVertical: "top", borderRadius: 12 },
+    categoryGrid: { width: "100%", gap: 8 },
+    categoryBtn: { backgroundColor: C.surface, borderRadius: 25, paddingVertical: 14, alignItems: "center" },
+    categoryBtnText: { color: C.text, fontSize: 14, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 },
+    submitNewSection: { width: "100%", marginTop: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: C.input },
+    historyTabs: { flexDirection: "row", width: "100%", gap: 8, marginBottom: 12 },
+    historyTab: { flex: 1, backgroundColor: C.surface, borderRadius: 25, paddingVertical: 10, alignItems: "center" },
+    historyTabActive: { backgroundColor: C.accent },
+    historyTabText: { color: C.muted, fontSize: 14, fontWeight: "600" },
+    historyTabTextActive: { color: C.text },
+    historyScroll: { flex: 1, width: "100%" },
+    historyScrollContent: { gap: 8, paddingBottom: 20 },
+    eventCard: { backgroundColor: C.surface, borderRadius: 15, padding: 12 },
+    eventHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+    badge: { backgroundColor: C.input, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+    badgeText: { color: C.text, fontSize: 11, fontWeight: "600", textTransform: "uppercase" },
+    eventTime: { color: C.muted, fontSize: 12 },
+    eventText: { color: C.text, fontSize: 14, lineHeight: 20 },
+    editBtn: { marginTop: 8, borderWidth: 1, borderColor: C.muted, borderRadius: 25, paddingVertical: 6, paddingHorizontal: 14, alignSelf: "flex-start" },
+    editBtnText: { color: C.muted, fontSize: 12, fontWeight: "600" },
+    emptyText: { color: C.muted, fontSize: 14, textAlign: "center", marginTop: 20 },
+    summaryBox: { backgroundColor: C.surface, borderRadius: 15, padding: 14, width: "100%", marginBottom: 16 },
+    summaryText: { color: C.text, fontSize: 14, lineHeight: 20 },
+    progressText: { color: C.muted, fontSize: 12, marginBottom: 8 },
+    question: { color: C.text, fontSize: 16, marginBottom: 16, textAlign: "center" },
+    scaleGrid: { marginBottom: 16, width: "100%", gap: 8 },
+    scaleRow: { flexDirection: "row", justifyContent: "flex-start", gap: 8, width: "100%" },
+    scaleBtn: { backgroundColor: C.surface, borderRadius: 8, flex: 1, height: 50, alignItems: "center", justifyContent: "center" },
+    scaleBtnSelected: { backgroundColor: C.accent },
+    scaleBtnText: { color: C.text, fontSize: 16, fontWeight: "600" },
+    scaleBtnTextSelected: { color: "#fff" },
+    reviewItem: { backgroundColor: C.surface, borderRadius: 15, padding: 12, width: "100%", marginBottom: 8 },
+    reviewLabel: { color: C.muted, fontSize: 12, textTransform: "uppercase", marginBottom: 4 },
+    reviewValue: { color: C.text, fontSize: 14 },
+    settingsBtn: { position: "absolute", bottom: 60 },
+    settingsBtnText: { color: C.muted, fontSize: 12 },
+    version: { position: "absolute", bottom: 30, color: C.muted, fontSize: 12 },
+    toast: { position: "absolute", bottom: 100, borderRadius: 25, paddingVertical: 10, paddingHorizontal: 20 },
+    toastSuccess: { backgroundColor: C.success },
+    toastError: { backgroundColor: C.error },
+    toastText: { color: "#fff", fontSize: 14, fontWeight: "600" },
+    profileRow: { flexDirection: "row", width: "100%", gap: 8, marginBottom: 16 },
+    profileBtn: { flex: 1, borderRadius: 25, paddingVertical: 12, alignItems: "center", borderWidth: 2, borderColor: "transparent" },
+    profileBtnActive: { borderColor: C.accent },
+    profileBtnText: { fontSize: 13, fontWeight: "600" },
+    profileSwatch: { width: 24, height: 24, borderRadius: 12, marginBottom: 4, borderWidth: 1, borderColor: C.muted },
+    settingsSectionLabel: { fontSize: 12, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, marginTop: 20, alignSelf: "flex-start" },
+  });
+}
 
 function WebDateInput(props) {
   var inputRef = useRef(null);
+  var colors = props.colors;
   var val = props.mode === "time"
     ? props.value.toTimeString().slice(0, 5)
     : props.value.toISOString().slice(0, 10);
@@ -53,7 +158,7 @@ function WebDateInput(props) {
       }
       if (props.onChange) props.onChange(null, d);
     },
-    style: { backgroundColor: C.surface, color: C.text, border: "1px solid " + C.muted, borderRadius: 8, padding: 8, fontSize: 16 },
+    style: { backgroundColor: colors.surface, color: colors.text, border: "1px solid " + colors.muted, borderRadius: 8, padding: 8, fontSize: 16 },
   });
 }
 
@@ -143,10 +248,16 @@ function AppContent() {
   var _fb4 = useState([]), feedbackList = _fb4[0], setFeedbackList = _fb4[1];
   var _fb5 = useState(false), feedbackShowList = _fb5[0], setFeedbackShowList = _fb5[1];
 
+  var _cp = useState(DEFAULT_PROFILE), colorProfile = _cp[0], setColorProfile = _cp[1];
+  var osScheme = useColorScheme();
+  var C = useMemo(function () { return getColors(colorProfile, osScheme); }, [colorProfile, osScheme]);
+  var st = useMemo(function () { return makeStyles(C); }, [C]);
+
   useEffect(function () {
     var envToken = process.env.EXPO_PUBLIC_AUTH_TOKEN;
     if (envToken) { setToken(envToken); }
     else { AsyncStorage.getItem("huxa_token").then(function (t) { if (t) setToken(t); }); }
+    AsyncStorage.getItem("huxa_color_profile").then(function (p) { if (p && COLOR_PROFILES[p]) setColorProfile(p); });
     loadQueue();
   }, []);
 
@@ -163,6 +274,11 @@ function AppContent() {
       showToastMsg("Token saved", "success");
       setScreen("idle");
     }
+  }
+
+  function saveColorProfile(key) {
+    setColorProfile(key);
+    AsyncStorage.setItem("huxa_color_profile", key);
   }
 
   function authHeaders() {
@@ -380,7 +496,7 @@ function AppContent() {
   if (screen === "idle") {
     return (
       <SafeAreaView style={st.container}>
-        <StatusBar barStyle="light-content" />
+        <StatusBar barStyle={C.statusBar} />
         <TouchableOpacity onPress={function () { setScreen("idle"); }} onLongPress={function () { setFeedbackPrevScreen(screen); setFeedbackType("feature"); setFeedbackText(""); setScreen("feedback"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
         <View style={st.idleButtons}>
           <TouchableOpacity style={st.btn} onPress={function () { if (!token) setScreen("token"); else setScreen("category"); }}><Text style={st.btnText}>Log</Text></TouchableOpacity>
@@ -444,13 +560,36 @@ function AppContent() {
     );
   }
 
-  // --- TOKEN ---
+  // --- SETTINGS ---
   if (screen === "token") {
     return (
       <SafeAreaView style={st.container}>
         <TouchableOpacity onPress={function () { setScreen("idle"); }} onLongPress={function () { setFeedbackPrevScreen(screen); setFeedbackType("feature"); setFeedbackText(""); setScreen("feedback"); }}><Text style={st.title}>HuXa</Text></TouchableOpacity>
-        <Text style={st.label}>Set API Token</Text>
+        <Text style={st.label}>Settings</Text>
+        <Text style={st.settingsSectionLabel}>API Token</Text>
         <TextInput style={st.input} placeholder="Bearer token" placeholderTextColor={C.muted} value={tokenInput} onChangeText={setTokenInput} autoCapitalize="none" autoCorrect={false} onSubmitEditing={saveTokenFn} returnKeyType="done" />
+        <Text style={st.settingsSectionLabel}>Color Profile</Text>
+        <View style={st.profileRow}>
+          {PROFILE_KEYS.map(function (key) {
+            var isAuto = key === "auto";
+            var resolved = isAuto ? resolveProfile("auto", osScheme) : key;
+            var prof = COLOR_PROFILES[resolved];
+            var isActive = key === colorProfile;
+            var label = isAuto ? "Auto" : prof.name;
+            return (
+              <TouchableOpacity key={key} style={[st.profileBtn, { backgroundColor: prof.surface }, isActive ? st.profileBtnActive : null]} onPress={function () { saveColorProfile(key); }}>
+                {isAuto
+                  ? <View style={{ flexDirection: "row", marginBottom: 4 }}>
+                      <View style={[st.profileSwatch, { backgroundColor: COLOR_PROFILES.dark.accent, borderColor: prof.muted, width: 14, height: 24, borderRadius: 0, borderTopLeftRadius: 12, borderBottomLeftRadius: 12, marginBottom: 0 }]} />
+                      <View style={[st.profileSwatch, { backgroundColor: COLOR_PROFILES.light.accent, borderColor: prof.muted, width: 14, height: 24, borderRadius: 0, borderTopRightRadius: 12, borderBottomRightRadius: 12, marginBottom: 0, borderLeftWidth: 0 }]} />
+                    </View>
+                  : <View style={[st.profileSwatch, { backgroundColor: prof.accent, borderColor: prof.muted }]} />
+                }
+                <Text style={[st.profileBtnText, { color: prof.text }]}>{label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
         <View style={st.row}>
           <TouchableOpacity style={st.btnBack} onPress={function () { setScreen("idle"); }}><Text style={st.btnBackText}>Back</Text></TouchableOpacity>
           <TouchableOpacity style={st.btnSubmit} onPress={saveTokenFn}><Text style={st.btnSubmitText}>Save</Text></TouchableOpacity>
@@ -486,9 +625,9 @@ function AppContent() {
             <Text style={st.label}>{editingEventId ? "Edit " : "New "}{selectedType}</Text>
             <View style={st.datePickerRow}>
               <TouchableOpacity onPress={function () { setComposeDate(shiftDate(composeDate, -1)); }}><Text style={st.dateArrowLeft}>{"\u25C0"}</Text></TouchableOpacity>
-              {Platform.OS === "web" ? <WebDateInput value={composeDate} mode="date" onChange={function (e, date) { if (date) setComposeDate(date); }} /> : <DateTimePicker value={composeDate} mode="date" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />}
+              {Platform.OS === "web" ? <WebDateInput colors={C} value={composeDate} mode="date" onChange={function (e, date) { if (date) setComposeDate(date); }} /> : <DateTimePicker value={composeDate} mode="date" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />}
               <TouchableOpacity onPress={function () { setComposeDate(shiftDate(composeDate, 1)); }}><Text style={st.dateArrowRight}>{"\u25B6"}</Text></TouchableOpacity>
-              {Platform.OS === "web" ? <WebDateInput value={composeDate} mode="time" onChange={function (e, date) { if (date) setComposeDate(date); }} /> : <DateTimePicker value={composeDate} mode="time" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />}
+              {Platform.OS === "web" ? <WebDateInput colors={C} value={composeDate} mode="time" onChange={function (e, date) { if (date) setComposeDate(date); }} /> : <DateTimePicker value={composeDate} mode="time" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) setComposeDate(date); }} />}
             </View>
             <TextInput style={[st.input, st.textArea]} placeholder="What happened?" placeholderTextColor={C.muted} value={composeText} onChangeText={setComposeText} multiline numberOfLines={3} />
             <View style={st.row}>
@@ -554,7 +693,7 @@ function AppContent() {
         <Text style={st.label}>History</Text>
         <View style={st.datePickerRow}>
           <TouchableOpacity onPress={function () { var d = shiftDate(new Date(historyDate + "T12:00:00"), -1).toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); }}><Text style={st.dateArrowLeft}>{"\u25C0"}</Text></TouchableOpacity>
-          {Platform.OS === "web" ? <WebDateInput value={new Date(historyDate + "T12:00:00")} mode="date" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} /> : <DateTimePicker value={new Date(historyDate + "T12:00:00")} mode="date" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} />}
+          {Platform.OS === "web" ? <WebDateInput colors={C} value={new Date(historyDate + "T12:00:00")} mode="date" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} /> : <DateTimePicker value={new Date(historyDate + "T12:00:00")} mode="date" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) { var d = date.toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); } }} />}
           <TouchableOpacity onPress={function () { var d = shiftDate(new Date(historyDate + "T12:00:00"), 1).toISOString().slice(0, 10); setHistoryDate(d); doFetchHistory(historyTab, d); }}><Text style={st.dateArrowRight}>{"\u25B6"}</Text></TouchableOpacity>
         </View>
         <View style={st.historyTabs}>
@@ -613,7 +752,7 @@ function AppContent() {
           <Text style={st.label}>Diary</Text>
           <View style={st.datePickerRow}>
             <TouchableOpacity onPress={function () { var d = shiftDate(new Date(diaryDate + "T12:00:00"), -1).toISOString().slice(0, 10); startDiary(d); }}><Text style={st.dateArrowLeft}>{"\u25C0"}</Text></TouchableOpacity>
-            {Platform.OS === "web" ? <WebDateInput value={new Date(diaryDate + "T12:00:00")} mode="date" onChange={function (e, date) { if (date) { startDiary(date.toISOString().slice(0, 10)); } }} /> : <DateTimePicker value={new Date(diaryDate + "T12:00:00")} mode="date" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) { startDiary(date.toISOString().slice(0, 10)); } }} />}
+            {Platform.OS === "web" ? <WebDateInput colors={C} value={new Date(diaryDate + "T12:00:00")} mode="date" onChange={function (e, date) { if (date) { startDiary(date.toISOString().slice(0, 10)); } }} /> : <DateTimePicker value={new Date(diaryDate + "T12:00:00")} mode="date" display="compact" themeVariant="dark" onChange={function (e, date) { if (date) { startDiary(date.toISOString().slice(0, 10)); } }} />}
             <TouchableOpacity onPress={function () { var d = shiftDate(new Date(diaryDate + "T12:00:00"), 1).toISOString().slice(0, 10); startDiary(d); }}><Text style={st.dateArrowRight}>{"\u25B6"}</Text></TouchableOpacity>
           </View>
           <View style={st.summaryBox}><Text style={st.summaryText}>{diarySummary}</Text></View>
@@ -876,66 +1015,3 @@ function AppContent() {
   return <SafeAreaView style={st.container}><Text style={st.label}>Unknown screen</Text><TouchableOpacity style={st.btnBack} onPress={function () { setScreen("idle"); }}><Text style={st.btnBackText}>Home</Text></TouchableOpacity></SafeAreaView>;
 }
 
-var st = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, alignItems: "center", paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0, paddingHorizontal: 20 },
-  scrollContent: { alignItems: "center", paddingBottom: 40, width: "100%" },
-  title: { fontSize: 28, color: C.text, fontWeight: "300", marginTop: 20, marginBottom: 20, letterSpacing: 2 },
-  label: { fontSize: 14, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 15 },
-  labelSmall: { fontSize: 12, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  idleButtons: { width: "100%", gap: 12 },
-  btn: { backgroundColor: C.accent, borderRadius: 25, paddingVertical: 16, alignItems: "center" },
-  btnSecondary: { backgroundColor: C.surface },
-  btnText: { color: C.text, fontSize: 16, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 },
-  btnSubmit: { backgroundColor: C.accent, borderRadius: 25, paddingVertical: 14, paddingHorizontal: 24, alignItems: "center", flex: 1 },
-  btnSubmitText: { color: C.text, fontSize: 14, fontWeight: "600", textTransform: "uppercase" },
-  btnBack: { borderRadius: 25, borderWidth: 1, borderColor: C.muted, paddingVertical: 14, paddingHorizontal: 24, alignItems: "center", flex: 1 },
-  btnBackText: { color: C.muted, fontSize: 14, fontWeight: "600", textTransform: "uppercase" },
-  row: { flexDirection: "row", width: "100%", gap: 12, marginTop: 12 },
-  halfRow: { flexDirection: "row", width: "50%", marginTop: 12, marginBottom: 16 },
-  datePickerRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginBottom: 16 },
-  dateArrowLeft: { color: C.muted, fontSize: 18, marginRight: Platform.OS === "web" ? 4 : -4 },
-  dateArrowRight: { color: C.muted, fontSize: 18, marginLeft: Platform.OS === "web" ? 4 : 6, marginRight: Platform.OS === "web" ? 18 : 0 },
-  input: { width: "100%", backgroundColor: C.input, borderRadius: 25, padding: 14, color: C.text, fontSize: 16, marginBottom: 12, outlineOffset: -2 },
-  inputText: { color: C.text, fontSize: 16 },
-  textArea: { minHeight: 80, textAlignVertical: "top", borderRadius: 12 },
-  categoryGrid: { width: "100%", gap: 8 },
-  categoryBtn: { backgroundColor: C.surface, borderRadius: 25, paddingVertical: 14, alignItems: "center" },
-  categoryBtnText: { color: C.text, fontSize: 14, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 },
-  submitNewSection: { width: "100%", marginTop: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: C.input },
-  historyTabs: { flexDirection: "row", width: "100%", gap: 8, marginBottom: 12 },
-  historyTab: { flex: 1, backgroundColor: C.surface, borderRadius: 25, paddingVertical: 10, alignItems: "center" },
-  historyTabActive: { backgroundColor: C.accent },
-  historyTabText: { color: C.muted, fontSize: 14, fontWeight: "600" },
-  historyTabTextActive: { color: C.text },
-  historyScroll: { flex: 1, width: "100%" },
-  historyScrollContent: { gap: 8, paddingBottom: 20 },
-  eventCard: { backgroundColor: C.surface, borderRadius: 15, padding: 12 },
-  eventHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
-  badge: { backgroundColor: C.input, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  badgeText: { color: C.text, fontSize: 11, fontWeight: "600", textTransform: "uppercase" },
-  eventTime: { color: C.muted, fontSize: 12 },
-  eventText: { color: C.text, fontSize: 14, lineHeight: 20 },
-  editBtn: { marginTop: 8, borderWidth: 1, borderColor: C.muted, borderRadius: 25, paddingVertical: 6, paddingHorizontal: 14, alignSelf: "flex-start" },
-  editBtnText: { color: C.muted, fontSize: 12, fontWeight: "600" },
-  emptyText: { color: C.muted, fontSize: 14, textAlign: "center", marginTop: 20 },
-  summaryBox: { backgroundColor: C.surface, borderRadius: 15, padding: 14, width: "100%", marginBottom: 16 },
-  summaryText: { color: C.text, fontSize: 14, lineHeight: 20 },
-  progressText: { color: C.muted, fontSize: 12, marginBottom: 8 },
-  question: { color: C.text, fontSize: 16, marginBottom: 16, textAlign: "center" },
-  scaleGrid: { marginBottom: 16, width: "100%", gap: 8 },
-  scaleRow: { flexDirection: "row", justifyContent: "flex-start", gap: 8, width: "100%" },
-  scaleBtn: { backgroundColor: C.surface, borderRadius: 8, flex: 1, height: 50, alignItems: "center", justifyContent: "center" },
-  scaleBtnSelected: { backgroundColor: C.accent },
-  scaleBtnText: { color: C.text, fontSize: 16, fontWeight: "600" },
-  scaleBtnTextSelected: { color: "#fff" },
-  reviewItem: { backgroundColor: C.surface, borderRadius: 15, padding: 12, width: "100%", marginBottom: 8 },
-  reviewLabel: { color: C.muted, fontSize: 12, textTransform: "uppercase", marginBottom: 4 },
-  reviewValue: { color: C.text, fontSize: 14 },
-  settingsBtn: { position: "absolute", bottom: 60 },
-  settingsBtnText: { color: C.muted, fontSize: 12 },
-  version: { position: "absolute", bottom: 30, color: C.muted, fontSize: 12 },
-  toast: { position: "absolute", bottom: 100, borderRadius: 25, paddingVertical: 10, paddingHorizontal: 20 },
-  toastSuccess: { backgroundColor: C.success },
-  toastError: { backgroundColor: C.error },
-  toastText: { color: "#fff", fontSize: 14, fontWeight: "600" },
-});

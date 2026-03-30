@@ -2,6 +2,11 @@
 
 All notable changes to HuXa are documented here.
 
+## v0.2.17 — 2026-03-30
+
+- Update dark color profile inspired by app icon (deeper navy bg, coral accent, cyan success)
+- Fix auto swatch in settings to show dark/light background colors instead of accent colors
+
 ## v0.2.16 — 2026-03-30
 
 - Add image attachment support to feedback/bug reports (pick from photo library, preview, upload)

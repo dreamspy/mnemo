@@ -22,19 +22,19 @@ import * as ImagePicker from "expo-image-picker";
 var DateTimePicker = Platform.OS === "web" ? null : require("@react-native-community/datetimepicker").default;
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE || "https://huxa.is";
-const APP_VERSION = "0.2.16";
+const APP_VERSION = "0.2.17";
 
 const COLOR_PROFILES = {
   dark: {
     name: "Dark",
-    bg: "#162032",
-    surface: "#1e3050",
-    input: "#2a4570",
-    text: "#e0ecf0",
-    muted: "#7a9ab0",
-    accent: "#e87070",
-    success: "#5ec4d4",
-    error: "#f07070",
+    bg: "#101c30",
+    surface: "#182848",
+    input: "#203660",
+    text: "#c8dce8",
+    muted: "#6890b0",
+    accent: "#c85060",
+    success: "#58c8d8",
+    error: "#d04848",
     radius: 10,
     statusBar: "light-content",
   },
@@ -588,8 +588,8 @@ function AppContent() {
               <TouchableOpacity key={key} style={[st.profileBtn, { backgroundColor: prof.surface }, isActive ? st.profileBtnActive : null]} onPress={function () { saveColorProfile(key); }}>
                 {isAuto
                   ? <View style={{ flexDirection: "row", marginBottom: 4 }}>
-                      <View style={[st.profileSwatch, { backgroundColor: COLOR_PROFILES.dark.accent, borderColor: prof.muted, width: 14, height: 24, borderRadius: 0, borderTopLeftRadius: 12, borderBottomLeftRadius: 12, marginBottom: 0 }]} />
-                      <View style={[st.profileSwatch, { backgroundColor: COLOR_PROFILES.light.accent, borderColor: prof.muted, width: 14, height: 24, borderRadius: 0, borderTopRightRadius: 12, borderBottomRightRadius: 12, marginBottom: 0, borderLeftWidth: 0 }]} />
+                      <View style={[st.profileSwatch, { backgroundColor: COLOR_PROFILES.dark.bg, borderColor: prof.muted, width: 12, height: 24, borderRadius: 0, borderTopLeftRadius: 12, borderBottomLeftRadius: 12, marginBottom: 0 }]} />
+                      <View style={[st.profileSwatch, { backgroundColor: COLOR_PROFILES.light.bg, borderColor: prof.muted, width: 12, height: 24, borderRadius: 0, borderTopRightRadius: 12, borderBottomRightRadius: 12, marginBottom: 0, borderLeftWidth: 0 }]} />
                     </View>
                   : <View style={[st.profileSwatch, { backgroundColor: prof.accent, borderColor: prof.muted }]} />
                 }

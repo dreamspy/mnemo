@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Node.js and npm
-- Python 3 with venv
+- Python 3.13 with venv
 - Xcode (for iOS simulator)
 - Expo Go app on iPhone (for testing on device)
 - Fabric (`pipx install fabric`) for deploying
@@ -18,10 +18,11 @@ The dev server script starts both the FastAPI backend and Expo from a single com
 ```
 
 This gives you:
-- **Backend** on `http://localhost:8000` with isolated data in `/tmp/huxa_dev/`
+- **Backend** on `http://<LAN_IP>:8000` (bound to `0.0.0.0`) with isolated data in `/tmp/huxa_dev/`
 - **Expo** in interactive mode — press `i` to open iOS simulator, `w` for web
 - Auth token set to `dev-token` automatically
-- App configured to talk to local backend (not production)
+- App configured to talk to local backend via your Mac's LAN IP (not production)
+- All clients (browser, simulator, iPhone) connect to the same local backend
 
 API keys (e.g. `OPENAI_API_KEY`) are loaded from `02_backend/.env`.
 
@@ -29,13 +30,14 @@ API keys (e.g. `OPENAI_API_KEY`) are loaded from `02_backend/.env`.
 
 1. Run `./05_scripts/dev_server.sh`
 2. Press `i` in the Expo terminal to launch the iOS simulator
-3. The app connects to `localhost:8000` — full local development
+3. The app connects to the local backend — full local development
 
 ### Testing on iPhone
 
-1. Run `./05_scripts/dev_server.sh`
-2. Scan the QR code with the Expo Go app
-3. Note: the app will connect to the **production** server (`huxa.is`) because `localhost` on the phone points to the phone itself, not your Mac
+1. Make sure your iPhone is on the same WiFi network as your Mac
+2. Run `./05_scripts/dev_server.sh`
+3. Scan the QR code with the Expo Go app
+4. The app connects to your Mac's local backend — full local development, no production data touched
 
 ### Testing in Browser
 

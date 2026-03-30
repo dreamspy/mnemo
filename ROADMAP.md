@@ -14,13 +14,43 @@
 
 - [ ] Set up Cloudflare Access or app lockdown (replace IP lockdown)
 
-## Multi-User (Google OAuth)
+## Multi-User (Google OAuth + Apple Sign-In)
 
-- [ ] Add Google OAuth login (backend endpoints for auth flow, JWT sessions)
-- [ ] Per-user JSONL storage (`/var/lib/huxa/users/{email}/events.jsonl` and `diary.jsonl`)
-- [ ] Add Google login to native app and web frontend
-- [ ] Replace bearer token with OAuth session
-- [ ] Remove token UI from web frontend (settings gear, token dialog)
+### Provider Setup
+- [ ] Create Google Cloud project + OAuth 2.0 client IDs (web, iOS, Android)
+- [ ] Enable "Sign In with Apple" on Apple Developer account + create Service ID for web
+- [ ] Generate JWT secret for session tokens
+
+### Backend Auth
+- [ ] Add Python deps: `PyJWT`, `cryptography`, `google-auth`, `httpx`
+- [ ] Create `02_backend/app/auth.py` — Google/Apple ID token verification, JWT issuance, user registry (`users.jsonl`), `get_current_user` dependency
+- [ ] Create `02_backend/app/routes/auth.py` — `POST /auth/google`, `POST /auth/apple`, `GET /auth/me`
+- [ ] Register auth router in `main.py`
+
+### Per-User Data
+- [ ] Per-user JSONL storage (`/var/lib/huxa/users/{user_id}/events.jsonl`, `diary.jsonl`, `feedback.jsonl`)
+- [ ] Refactor `main.py`: replace `verify_token` with `get_current_user`, route data to per-user dirs
+- [ ] Keep legacy bearer token working during transition
+
+### Migration
+- [ ] Create `05_scripts/migrate_to_multiuser.py` — copy existing data to legacy user directory
+- [ ] Run migration on server
+
+### Expo App
+- [ ] Add deps: `expo-auth-session`, `expo-crypto`, `expo-web-browser`, `expo-apple-authentication`
+- [ ] Replace manual token input with login screen (Google + Apple buttons)
+- [ ] Google OAuth flow via `expo-auth-session` (web, iOS, Android)
+- [ ] Apple Sign-In via `expo-apple-authentication` (iOS native) + `expo-auth-session` (web)
+- [ ] Store JWT in AsyncStorage, verify on startup via `/auth/me`
+- [ ] Update settings screen: show user info, sign out button, remove token input
+
+### Infrastructure
+- [ ] Add `/auth` location block to Nginx config (tighter rate limit)
+- [ ] Add env vars to systemd: `HUXA_JWT_SECRET`, `HUXA_GOOGLE_CLIENT_ID`, `HUXA_APPLE_SERVICE_ID`
+
+### Cleanup
+- [ ] Remove legacy bearer token support after confirming OAuth works
+- [ ] Update CLAUDE.md (single-user → multi-user, bearer token → JWT/OAuth)
 
 ## Dark / Light Mode
 

@@ -77,4 +77,5 @@ class FeedbackOut(BaseModel):
     type: str
     text: str
     created_at: str
+    attachment: str | None = None
     meta: dict = Field(default_factory=lambda: {"version": 1})

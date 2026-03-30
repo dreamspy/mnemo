@@ -4,8 +4,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Depends, HTTPException, Query, status
+from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from openai import OpenAI
@@ -31,6 +32,7 @@ security = HTTPBearer()
 EVENTS_FILE = Path(os.environ.get("HUXA_EVENTS_FILE", "/var/lib/huxa/events.jsonl"))
 DIARY_FILE = Path(os.environ.get("HUXA_DIARY_FILE", "/var/lib/huxa/diary.jsonl"))
 FEEDBACK_FILE = Path(os.environ.get("HUXA_FEEDBACK_FILE", "/var/lib/huxa/feedback.jsonl"))
+ATTACHMENTS_DIR = Path(os.environ.get("HUXA_ATTACHMENTS_DIR", "/var/lib/huxa/attachments"))
 AUTH_TOKEN = os.environ.get("HUXA_AUTH_TOKEN", "")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
@@ -399,3 +401,57 @@ def delete_feedback(feedback_id: str):
     with open(FEEDBACK_FILE, "a") as f:
         f.write(json.dumps(deleted) + "\n")
     return {"status": "deleted"}
+
+
+ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+@app.post("/reports/{report_id}/attachment", dependencies=[Depends(verify_token)])
+async def upload_attachment(report_id: str, file: UploadFile = File(...)):
+    if file.content_type not in ALLOWED_MIME:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, WebP, and GIF images are allowed")
+
+    ext = {
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/webp": ".webp",
+        "image/gif": ".gif",
+    }[file.content_type]
+
+    data = await file.read()
+    if len(data) > MAX_ATTACHMENT_BYTES:
+        raise HTTPException(status_code=400, detail="File too large (max 10 MB)")
+
+    ATTACHMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{report_id}{ext}"
+    dest = ATTACHMENTS_DIR / filename
+    dest.write_bytes(data)
+
+    # Append an updated record with the attachment field
+    # Read current record to preserve fields
+    current = None
+    if FEEDBACK_FILE.exists():
+        for line in FEEDBACK_FILE.read_text().strip().splitlines():
+            if not line.strip():
+                continue
+            entry = json.loads(line)
+            if entry["id"] == report_id:
+                current = entry
+
+    if not current:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    current["attachment"] = filename
+    with open(FEEDBACK_FILE, "a") as f:
+        f.write(json.dumps(current) + "\n")
+
+    return {"attachment": filename}
+
+
+@app.get("/attachments/{filename}")
+def serve_attachment(filename: str):
+    path = ATTACHMENTS_DIR / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Attachment not found")
+    return FileResponse(path)
